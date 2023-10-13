@@ -1,13 +1,15 @@
 Package: samplingNR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Stratified sample allocation under anticipated nonresponse
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R: person("Jonathan", "Mendelson", email = "jmendelson@gmail.com", role=c("aut", "cre"))
+Description: Computes stratified sample allocations in a manner that accounts for anticipated nonresponse.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/jmendelson256/samplingNR
 BugReports: https://github.com/jmendelson256/samplingNR/issues
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.2.3

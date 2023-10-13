@@ -1,0 +1,13 @@
+url: ~
+template:
+  bootstrap: 5
+
+reference:
+- title: "Allocate sample"
+  desc: Compute sample allocations
+  contents:
+- title: "tbinom dist"
+  desc: Truncated binomial distribution functions.
+  contents:
+  - dtruncbinom
+  - calc_moments_truncbinom
