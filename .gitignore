@@ -2,18 +2,14 @@
 .Rhistory
 .RData
 .Ruserdata
-
 #Temporary folders
 /dev/*
-
 #Output from elsewhere
 /man/*
 vignettes/*.html
 vignettes/*.pdf
-
 #Output from R CMD build
 /*.tar.gz
-
 #Extra files in examples-long
 /examples-long/**/*.html
 /examples-long/**/*.csv
@@ -22,14 +18,13 @@ vignettes/*.pdf
 /examples-long/**/*.tmp
 /examples-long/**/*.png
 /examples-long/**/*.xlsx
-
 docs
 /doc/
 /Meta/
-
 /vignettes/web_only/**/*.rds
 /vignettes/web_only/**/*.csv
 /vignettes/web_only/**/*.xlsx
 .Rdata
 .httr-oauth
 .DS_Store
+notes
