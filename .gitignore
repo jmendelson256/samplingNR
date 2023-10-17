@@ -18,7 +18,6 @@ vignettes/*.pdf
 /examples-long/**/*.tmp
 /examples-long/**/*.png
 /examples-long/**/*.xlsx
-docs
 /doc/
 /Meta/
 /vignettes/web_only/**/*.rds
