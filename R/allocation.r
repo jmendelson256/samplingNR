@@ -1,3 +1,92 @@
+#'Calculate zeta given n's and phibar's, with smoothing for fractional n
+#'
+#'@description
+#'Like \code{\link{calc_zeta_discrete}}, but handles continuous
+#'allocation as weighted average of nearby points.
+#'
+#'Suppose that the number of respondents follows a zero-truncated binomial
+#'distribution, written as \eqn{r_h \sim TBinom(n_h, \bar{\phi}_h)}, where
+#'\eqn{n_h} is the number of invitees in stratum \eqn{h}
+#'and \eqn{\bar{\phi}_h} is the average
+#'response propensity within stratum in stratum \eqn{h}.
+#'Our paper defines the zeta function as
+#'\eqn{\zeta_h(n_h, \bar{\phi}_h)=E(r_h)E\left(\frac{1}{r_h}\right)}.
+#'The current function computes \eqn{\zeta_h(n_h', \bar{\phi}_h)},
+#'where we use
+#'\eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
+#'to avoid underallocating to strata with too few expected respondents, and
+#'where, \eqn{r_h^{LB}} is some specified lower bound on the number
+#'of expected respondents.
+#'By default, we set \eqn{r_h^{LB}=3.5}, since the
+#'truncated binomial distribution may sometimes be a poor approximation
+#'for the binomial distribution below this levels.
+#'
+#'\strong{NOTE}: if \eqn{n_h'} has a fractional component,
+#'  results returned are a weighted average of the evaluations
+#'  at \eqn{\lfloor n_h \rfloor} and  \eqn{\lfloor n_h \rfloor + 1}.
+#'
+#'
+#'@param n_h sample allocation vector
+#'@param phibar_h strata response rate vector
+#'@param rh_min (scalar) minimum target respondents per stratum
+#'@param verbose_flag (bool) flag on whether to provide detailed results
+#'
+#'@returns vector of length \eqn{H} containing
+#'\eqn{\left\{\zeta_h(n_h', \bar{\phi}_h):h=1,2,...,H\right\}},
+#'where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h}}.
+#'
+#'@examples
+#'
+#'#Basic example
+#'calc_zeta(n_h = c(100, 200, 300, 300),
+#'          phibar_h = c(.03, .02, .05, .001))
+#'
+#'#Verbose info shows that strata 2-4 are set to the minimum
+#'#  due to having fewer than 3.5 expected respondents
+#' calc_zeta(n_h = c(100, 200, 300, 300),
+#'                          phibar_h = c(.03, .02, .05, .001),
+#'                          verbose_flag = TRUE)
+#'
+#'#Similar to above, but removes the minimum number of respondents
+#' calc_zeta(n_h = c(100, 200, 300, 300),
+#'                          phibar_h = c(.03, .02, .05, .001),
+#'                          rh_min = 0,
+#'                          verbose_flag = TRUE)
+#'
+#'@export
+calc_zeta <- function(n_h,
+                      phibar_h,
+                      rh_min = 3.5,
+                      verbose_flag = FALSE) {
+  #note: n_h_ceil is n_h_floor + 1 instead of ceiling(n_h_floor) to allow for integer inputs
+  n_h_floor <- floor(n_h)
+  n_h_ceil <- n_h_floor + 1
+  n_h_wt <- 1 - (n_h - n_h_floor)
+
+  zeta_floor <- calc_zeta_discrete(n_h = n_h_floor,
+                                   phibar_h = phibar_h,
+                                   rh_min = rh_min,
+                                   verbose_flag = verbose_flag)
+
+  zeta_ceil <- calc_zeta_discrete(n_h = n_h_ceil,
+                                  phibar_h = phibar_h,
+                                  rh_min = rh_min,
+                                  verbose_flag = verbose_flag)
+
+  if(verbose_flag) {
+    res <- n_h_wt  * zeta_floor$res + (1 - n_h_wt) * zeta_ceil$res
+  } else {
+    res <- n_h_wt  * zeta_floor + (1 - n_h_wt) * zeta_ceil
+  }
+
+  if(verbose_flag) {
+    return(mget(ls()))
+  } else {
+    return(res)
+  }
+}
+#codetools::findGlobals(calc_zeta)
+
 #'Compute zeta, as defined in paper, for integer number of respondents
 #'
 #'@description
@@ -54,21 +143,21 @@
 #'@examples
 #'
 #'#Basic example
-#' calc_zeta_discrete(n_h = c(100, 200, 300, 300),
-#'                                   phibar_h = c(.03, .02, .05, .001))
+#'calc_zeta_discrete(n_h = c(100, 200, 300, 300),
+#'                   phibar_h = c(.03, .02, .05, .001))
 #'
 #'#Verbose info shows that strata 1,5 have their sample sizes increased
 #'#   due to having fewer than 3.5 expected respondents
 #' calc_zeta_discrete(n_h = c(100, 200, 300, 300),
-#'                                   phibar_h = c(.03, .02, .05, .001),
-#'                                   verbose_flag = TRUE)
+#'                    phibar_h = c(.03, .02, .05, .001),
+#'                    verbose_flag = TRUE)
 #'
 #'#Similar to above, but removes the minimum number of respondents,
 #'# which changes the values for strata 1 and 4.
 #' calc_zeta_discrete(n_h = c(100, 200, 300, 300),
-#'                                   phibar_h = c(.03, .02, .05, .001),
-#'                                   rh_min = 0,
-#'                                   verbose_flag = TRUE)
+#'                    phibar_h = c(.03, .02, .05, .001),
+#'                    rh_min = 0,
+#'                    verbose_flag = TRUE)
 #'@export
 calc_zeta_discrete <- function(n_h,
                                phibar_h,
