@@ -69,7 +69,6 @@
 #'                                   phibar_h = c(.03, .02, .05, .001),
 #'                                   rh_min = 0,
 #'                                   verbose_flag = TRUE)
-#'}
 #'@export
 calc_zeta_discrete <- function(n_h,
                                phibar_h,
