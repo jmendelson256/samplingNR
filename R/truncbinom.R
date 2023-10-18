@@ -68,8 +68,8 @@ dtruncbinom <- function(x, size, prob) {
 #' \eqn{\textrm{Var}(X)}, and \eqn{\textrm{E}(1/x)}.
 #'
 #'@details
-#'Moments are computed directly using the probability mass function since there
-#'is not a simple closed form for \eqn{textrm{E}(1/x)}.
+#'Note that moments are computed directly using the probability mass function since there
+#'is not a simple closed form for \eqn{\textrm{E}(1/x)}.
 #'This may lead to slow computation for extremely large numbers of trials.
 #'
 #'@param size scalar number of trials (1 or more)

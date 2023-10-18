@@ -2,7 +2,7 @@
 
 export("%>%")
 export(calc_moments_truncbinom)
-export(calc_zeta_discrete)
+export(calc_zeta)
 export(dtruncbinom)
 importFrom(dplyr,bind_rows)
 importFrom(dplyr,mutate)

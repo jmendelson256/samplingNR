@@ -4,10 +4,14 @@
 #'\code{calc_zeta} computes
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
 #' as defined in the paper.
-#'If there are any strata where \eqn{\mathrm{E}(r_h)<3.5}, we evaluate
-#' \eqn{\zeta_h(.)} using \eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
+#'If there are any strata where the allocation may lead to
+#' \eqn{\mathrm{E}(r_h) < 3.5}, we evaluate
+#' \eqn{\zeta_h(.)} using
+#' \eqn{n_h':= max\left(n_h, \left\lceil
+#'      \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #' in place of \eqn{n_h}.
-#'\eqn{\zeta_h(.)} is computed for continuous \eqn{n_h} as a weighted average
+#'Further, \eqn{\zeta_h(.)} is computed for continuous \eqn{n_h}
+#' as a weighted average
 #' of evaluations at \eqn{\lfloor n_h \rfloor} and
 #' \eqn{\lfloor n_h \rfloor + 1}, as in the paper.
 #'
@@ -29,7 +33,7 @@
 #'computes \eqn{\zeta_h(n_h', \bar{\phi}_h)}, where we use
 #'\eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #'to avoid underallocating to strata with too few expected respondents, and
-#'where, \eqn{r_h^{LB}} is some given lower bound on the number
+#'where \eqn{r_h^{LB}} is some given lower bound on the number
 #'of expected respondents.
 #'By default, we set \eqn{r_h^{LB} = 3.5}, since the truncated binomial
 #'distribution may sometimes be a poor approximation
@@ -41,39 +45,25 @@
 #'For continuous \eqn{n_h}, we define \eqn{\zeta_h(n_h, \bar{\phi}_h)}
 #' as a weighted average of its evaluations at \eqn{\lfloor n_h \rfloor} and
 #' \eqn{\lfloor n_h \rfloor + 1}, via
-#'
-#'\eqn{\zeta_h'(n_h,\bar{\phi}_h) =
+#'\deqn{\zeta_h'(n_h,\bar{\phi}_h) =
 #'     w_h \cdot \zeta_h(\lfloor n_h \rfloor,\bar{\phi}_h) + \left(1 - w_h\right)\cdot
-#'     \zeta_h(\lfloor n_h \rfloor + 1,\bar{\phi}_h)},
-#'
+#'     \zeta_h(\lfloor n_h \rfloor + 1,\bar{\phi}_h),}
 #' where \eqn{w_h= \left(\lfloor n_h \rfloor + 1\right) - n_h}.
 #'
 #'@param n_h (vector) strata sample sizes (before nonresponse)
 #'@param phibar_h (vector) strata response propensities
 #'@param rh_min (scalar) minimum target respondents per stratum (default 3.5)
-#'@param verbose_flag (bool) flag on whether to provide detailed results
+#'@param verbose_flag (bool) flag on whether to provide noisy results
 #'
 #'@returns vector of length \eqn{H} containing
 #'\eqn{\left\{\zeta_h(n_h', \bar{\phi}_h):h=1,2,...,H\right\}},
 #'where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h}}.
 #'
 #'@examples
-#'
 #'#Basic example
+#'#Note that n_h is adjusted in strata 1 and 4 since n_h * phibar_h < 3.5
 #'calc_zeta(n_h = c(100, 200, 300, 300),
-#'          phibar_h = c(.03, .02, .05, .001))
-#'
-#'#Verbose info shows that strata 2-4 are set to the minimum
-#'#  due to having fewer than 3.5 expected respondents
-#'calc_zeta(n_h = c(100, 200, 300, 300),
-#'          phibar_h = c(.03, .02, .05, .001),
-#'          verbose_flag = TRUE)
-#'
-#'#Similar to above, but removes the minimum number of respondents
-#'calc_zeta(n_h = c(100, 200, 300, 300),
-#'          phibar_h = c(.03, .02, .05, .001),
-#'          rh_min = 0,
-#'          verbose_flag = TRUE)
+#'          phibar_h = c(.03, .02, .05, .005))
 #'
 #'@export
 calc_zeta <- function(n_h,
@@ -115,9 +105,12 @@ calc_zeta <- function(n_h,
 #'\code{calc_zeta_discrete} computes
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
 #'as defined in the paper, for integer \eqn{n_h}.
-#'If there are any strata where \eqn{\mathrm{E}(r_h)<3.5}, we evaluate
-#'\eqn{\zeta_h(.)} using \eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
-#'in place of \eqn{n_h}.
+#'If there are any strata where the allocation may lead to
+#' \eqn{\mathrm{E}(r_h) < 3.5}, we evaluate
+#' \eqn{\zeta_h(.)} using
+#' \eqn{n_h':= max\left(n_h, \left\lceil
+#'      \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
+#' in place of \eqn{n_h}.
 #'Continuous values of \eqn{n_h} are rounded (by default).
 #'
 #'@details
@@ -138,7 +131,7 @@ calc_zeta <- function(n_h,
 #'computes \eqn{\zeta_h(n_h', \bar{\phi}_h)}, where we use
 #'\eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #'to avoid underallocating to strata with too few expected respondents, and
-#'where, \eqn{r_h^{LB}} is some given lower bound on the number
+#'where \eqn{r_h^{LB}} is some given lower bound on the number
 #'of expected respondents.
 #'By default, we set \eqn{r_h^{LB} = 3.5}, since the truncated binomial
 #'distribution may sometimes be a poor approximation
