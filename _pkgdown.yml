@@ -7,7 +7,6 @@ reference:
   desc: Allocation helper functions
   contents:
   - calc_zeta
-  - calc_zeta_discrete
 - title: "tbinom distribution"
   desc: Truncated binomial distribution
   contents:

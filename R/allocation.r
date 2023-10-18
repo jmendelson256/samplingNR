@@ -1,34 +1,56 @@
-#'Calculate zeta given n's and phibar's, with smoothing for fractional n
+#'Compute zeta, as defined in paper, with smoothing for fractional n
 #'
 #'@description
-#'Like \code{\link{calc_zeta_discrete}}, but handles continuous
-#'allocation as weighted average of nearby points.
+#'\code{calc_zeta} computes
+#'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
+#' as defined in the paper.
+#'If there are any strata where \eqn{\mathrm{E}(r_h)<3.5}, we evaluate
+#' \eqn{\zeta_h(.)} using \eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
+#' in place of \eqn{n_h}.
+#'\eqn{\zeta_h(.)} is computed for continuous \eqn{n_h} as a weighted average
+#' of evaluations at \eqn{\lfloor n_h \rfloor} and
+#' \eqn{\lfloor n_h \rfloor + 1}, as in the paper.
 #'
-#'Suppose that the number of respondents follows a zero-truncated binomial
-#'distribution, written as \eqn{r_h \sim TBinom(n_h, \bar{\phi}_h)}, where
-#'\eqn{n_h} is the number of invitees in stratum \eqn{h}
-#'and \eqn{\bar{\phi}_h} is the average
-#'response propensity within stratum in stratum \eqn{h}.
-#'Our paper defines the zeta function as
-#'\eqn{\zeta_h(n_h, \bar{\phi}_h)=E(r_h)E\left(\frac{1}{r_h}\right)}.
-#'The current function computes \eqn{\zeta_h(n_h', \bar{\phi}_h)},
-#'where we use
+#'@details
+#'In our paper, we assumed that the number of respondents in stratum \eqn{h}
+#' can be modeled as standard binomial with support for zero removed
+#' (i.e., zero-truncated binomial; see \code{\link{dtruncbinom}}),
+#' written as \eqn{r_h \sim TBinom(n_h, \bar{\phi}_h)}, where
+#'\eqn{n_h} is the number of invitees in stratum \eqn{h},
+#'\eqn{\bar{\phi}_h} is the average response propensity within stratum \eqn{h},
+#'and where the unit-level response propensities are assumed constant within
+#'strata.
+#'Our paper defines the function
+#'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)}.
+#'This quantity is a variance inflation term that captures the effect of
+#'variability in the number of respondents for a given allocation.
+#'
+#'For discrete \eqn{n_h}, the current function (\code{calc_zeta})
+#'computes \eqn{\zeta_h(n_h', \bar{\phi}_h)}, where we use
 #'\eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #'to avoid underallocating to strata with too few expected respondents, and
-#'where, \eqn{r_h^{LB}} is some specified lower bound on the number
+#'where, \eqn{r_h^{LB}} is some given lower bound on the number
 #'of expected respondents.
-#'By default, we set \eqn{r_h^{LB}=3.5}, since the
-#'truncated binomial distribution may sometimes be a poor approximation
-#'for the binomial distribution below this levels.
+#'By default, we set \eqn{r_h^{LB} = 3.5}, since the truncated binomial
+#'distribution may sometimes be a poor approximation
+#'for the binomial distribution below these levels,
+#'and as we observed numerically that \eqn{\zeta_h(n_h, \bar{\phi}_h)}
+#'is roughly maximized for various \eqn{\bar{\phi}_h} (fixed at levels
+#'between .01 and 1) when \eqn{n_h \approx \frac{3.5}{\bar{\phi}_h}}.
 #'
-#'\strong{NOTE}: if \eqn{n_h'} has a fractional component,
-#'  results returned are a weighted average of the evaluations
-#'  at \eqn{\lfloor n_h \rfloor} and  \eqn{\lfloor n_h \rfloor + 1}.
+#'For continuous \eqn{n_h}, we define \eqn{\zeta_h(n_h, \bar{\phi}_h)}
+#' as a weighted average of its evaluations at \eqn{\lfloor n_h \rfloor} and
+#' \eqn{\lfloor n_h \rfloor + 1}, via
 #'
+#'\eqn{\zeta_h'(n_h,\bar{\phi}_h) =
+#'     w_h \cdot \zeta_h(\lfloor n_h \rfloor,\bar{\phi}_h) + \left(1 - w_h\right)\cdot
+#'     \zeta_h(\lfloor n_h \rfloor + 1,\bar{\phi}_h)},
 #'
-#'@param n_h sample allocation vector
-#'@param phibar_h strata response rate vector
-#'@param rh_min (scalar) minimum target respondents per stratum
+#' where \eqn{w_h= \left(\lfloor n_h \rfloor + 1\right) - n_h}.
+#'
+#'@param n_h (vector) strata sample sizes (before nonresponse)
+#'@param phibar_h (vector) strata response propensities
+#'@param rh_min (scalar) minimum target respondents per stratum (default 3.5)
 #'@param verbose_flag (bool) flag on whether to provide detailed results
 #'
 #'@returns vector of length \eqn{H} containing
@@ -43,15 +65,15 @@
 #'
 #'#Verbose info shows that strata 2-4 are set to the minimum
 #'#  due to having fewer than 3.5 expected respondents
-#' calc_zeta(n_h = c(100, 200, 300, 300),
-#'                          phibar_h = c(.03, .02, .05, .001),
-#'                          verbose_flag = TRUE)
+#'calc_zeta(n_h = c(100, 200, 300, 300),
+#'          phibar_h = c(.03, .02, .05, .001),
+#'          verbose_flag = TRUE)
 #'
 #'#Similar to above, but removes the minimum number of respondents
-#' calc_zeta(n_h = c(100, 200, 300, 300),
-#'                          phibar_h = c(.03, .02, .05, .001),
-#'                          rh_min = 0,
-#'                          verbose_flag = TRUE)
+#'calc_zeta(n_h = c(100, 200, 300, 300),
+#'          phibar_h = c(.03, .02, .05, .001),
+#'          rh_min = 0,
+#'          verbose_flag = TRUE)
 #'
 #'@export
 calc_zeta <- function(n_h,
@@ -90,7 +112,7 @@ calc_zeta <- function(n_h,
 #'Compute zeta, as defined in paper, for integer number of respondents
 #'
 #'@description
-#'\code{calc_zeta_discrete} essentially computes
+#'\code{calc_zeta_discrete} computes
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
 #'as defined in the paper, for integer \eqn{n_h}.
 #'If there are any strata where \eqn{\mathrm{E}(r_h)<3.5}, we evaluate
@@ -108,8 +130,8 @@ calc_zeta <- function(n_h,
 #'and where the unit-level response propensities are assumed constant within
 #'strata.
 #'Our paper defines the function
-#'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)};
-#'this quantity is a variance inflation term that captures the effect of
+#'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)}.
+#'This quantity is a variance inflation term that captures the effect of
 #'variability in the number of respondents for a given allocation.
 #'
 #'The current function (\code{calc_zeta_discrete})
@@ -158,7 +180,7 @@ calc_zeta <- function(n_h,
 #'                    phibar_h = c(.03, .02, .05, .001),
 #'                    rh_min = 0,
 #'                    verbose_flag = TRUE)
-#'@export
+#'@keywords internal
 calc_zeta_discrete <- function(n_h,
                                phibar_h,
                                rh_min = 3.5,
