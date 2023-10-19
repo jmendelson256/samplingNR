@@ -1,3 +1,5 @@
+# Exported functions ====================
+
 #'Compute zeta, as defined in paper, with smoothing for fractional n
 #'
 #'@description
@@ -99,6 +101,123 @@ calc_zeta <- function(n_h,
 }
 #codetools::findGlobals(calc_zeta)
 
+#'Calculates alloc iteratively, and assuming n_h <= N_h
+#'
+#'Like calc_opt_nh_nonresp_given_zeta, but iterative.
+#'Calculates allocation iteratively in manner accounting for zeta, as follows:\enumerate{
+#'  \item Iteration 1. \itemize{
+#'    \item Calculate nh_1 via calc_opt_nh_nonresp_given_zeta() ignoring zeta.
+#'    \item Calculate zeta_h_1 via calc_zeta for nh_1
+#'  }
+#'  \item Iterative k (for \eqn{k>=2}): \itemize{
+#'    \item Calculate nh_k(N_h, phibar_h, ...) fixing zeta at zeta_h_(k-1)
+#'    \item Calculate zeta_h_k for nh_2
+#'    \item Compare max difference for components of nh_k (versus nh_(k-1)) to tolerance.
+#'    \item If k>=K or maxdiff<tolerance, accept current iteration as solution.
+#'  }
+#'}
+#'
+#'NOTE: must provide n_max or c_max.
+#'
+#'@param N_h (vec) strata pop counts
+#'@param phibar_h (vec) response rates by strata
+#'@param ... other params to pass on to \code{calc_opt_nh_nonresp_given_zeta()}
+#'@param tol (scalar) tolerance (for stopping)
+#'@param max_iter (scalar) max number of iterations (>=1)
+#'@param verbose_flag (bool) whether to provide detailed results
+#'@param browser_flag (bool) whether to open a browser for debugging purposes
+
+#'@returns \code{n_h}, with the following attributes: \itemize{
+#'  \item \code{num_iter} (scalar) Number of iterations used
+#'  \item \code{zeta_h_min_1} (vector) final zetas as used (i.e., from 2nd-to-last round)
+#'  \item \code{max_nh_delta} (scalar) biggest change in stratum allocation from previous round
+#'}
+#'
+#'@examples
+#'#Compute allocation for PEVS-ADM 2016 data set for total sample size of 50k
+#'#Assumes tau = 1 by default
+#'pevs_opt_alloc_50k <- calc_opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
+#'                                          phibar_h = pevs_adm_2016_rrs$rr_h,
+#'                                          n_max = 50000)
+#'
+#'#Merge results into data frame
+#'pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs %>%
+#'   dplyr::mutate(n_h = c(pevs_opt_alloc_50k),
+#'                 zeta_h = attr(pevs_opt_alloc_50k,"zeta_h_min_1"))
+#'
+#'#View first few rows
+#'head(pevs_adm_alloc_50k_merged)
+#'
+#'@export
+calc_opt_nh_nonresp <- function(N_h,
+                                phibar_h,
+                                tol = 1e-8,
+                                max_iter = 20,
+                                verbose_flag = FALSE,
+                                browser_flag = FALSE,
+                                ...) {
+  if(browser_flag) browser()
+  stopifnot(length(max_iter)==1)
+  stopifnot(max_iter>=1)
+
+  dotdotdot_var_in_formals <- names(list(...)) %in% names(formals(calc_opt_nh_nonresp_given_zeta))
+  if(!all(dotdotdot_var_in_formals)) {
+    vars_not_in_formals <- paste0(names(list(...))[!dotdotdot_var_in_formals], collaose = ", ")
+    stop(paste0(c("Contains extraneous vars not in calc_opt_nh_nonresp_given_zeta: ", vars_not_in_formals),
+                collapse = ""))
+  }
+  if("zeta_h" %in% names(list(...))) stop("zeta should be NULL; will be calculated in procedure")
+
+  nh_list <- vector(mode = "list", length = max_iter)
+  zeta_list <- vector(mode = "list", length = max_iter)
+
+  #Compute initial allocation
+  nh_args <- append(list(N_h = N_h,
+                         phibar_h = phibar_h),
+                    list(...))
+
+  nh_list[[1]] <-  do.call(calc_opt_nh_nonresp_given_zeta, nh_args)
+  zeta_list[[1]] <- calc_zeta(n_h = nh_list[[1]],
+                              phibar_h = phibar_h)
+  iter <- 1
+  max_nh_delta <- Inf
+
+  while(iter <= max_iter & max_nh_delta > tol) {
+    iter <- iter + 1
+
+    nh_args <- append(list(N_h = N_h,
+                           phibar_h = phibar_h,
+                           zeta_h = zeta_list[[iter - 1]]),
+                      list(...))
+    nh_list[[iter]] <-  do.call(calc_opt_nh_nonresp_given_zeta, nh_args)
+
+    zeta_list[[iter]] <- calc_zeta(n_h = nh_list[[iter]],
+                                   phibar_h = phibar_h)
+
+    max_nh_delta <- max(abs(nh_list[[iter]] - nh_list[[iter-1]]))
+  }
+  nh_list <- nh_list[1:iter]
+  zeta_list <- zeta_list[1:iter]
+
+  n_h <- nh_list[[iter]]
+  zeta_h_min_1 <- zeta_list[[iter-1]]
+  zeta_h <- zeta_list[[iter]]
+
+  res <- n_h
+  attr(res, "num_iter") <- iter
+  attr(res, "zeta_h_min_1") <- zeta_h_min_1
+  #attr(res, "zeta_h") <- zeta_h
+  attr(res, "max_nh_delta") <- max_nh_delta
+
+  if(verbose_flag) {
+    return(mget(ls()))
+  } else {
+    return(res)
+  }
+}
+
+# Internal functions ====================
+
 #'Compute zeta, as defined in paper, for integer number of respondents
 #'
 #'@description
@@ -169,10 +288,10 @@ calc_zeta <- function(n_h,
 #'
 #'#Similar to above, but removes the minimum number of respondents,
 #'# which changes the values for strata 1 and 4.
-#' calc_zeta_discrete(n_h = c(100, 200, 300, 300),
-#'                    phibar_h = c(.03, .02, .05, .001),
-#'                    rh_min = 0,
-#'                    verbose_flag = TRUE)
+#'calc_zeta_discrete(n_h = c(100, 200, 300, 300),
+#'                   phibar_h = c(.03, .02, .05, .001),
+#'                   rh_min = 0,
+#'                   verbose_flag = TRUE)
 #'@keywords internal
 calc_zeta_discrete <- function(n_h,
                                phibar_h,
@@ -213,3 +332,135 @@ calc_zeta_discrete <- function(n_h,
   }
 }
 #codetools::findGlobals(calc_zeta_discrete)
+
+#'Calculates one iteration of proposed optimal allocation conditioned on some zeta
+#'
+#'@description
+#'Calculates one iteration of proposed allocation via formula for user-supplied zeta, under
+#' the assumption that \eqn{n_h \le N_h}. User must provide n_max or c_max.
+#'
+#'@param N_h (vector) strata population counts
+#'@param S_h (vector) strata population standard deviations; constant, by default
+#'@param phibar_h (vector) response rates by strata
+#'@param n_max (scalar) total sample to allocate
+#'@param c_max (scalar) max expected costs to allocate
+#'@param zeta_h (vector; optional) adjustment factor for small variances, if needed
+#'@param c_NR_h (vector; optional) per-unit costs for nonrespondents in stratum h
+#'@param tau_h (vector; optional) ratio of costs for respondents to costs for nonrespondents in stratum h
+#'@param strict_flag (boolean) whether to throw error (versus warning) if any n_h > N_h
+#'@param verbose_flag (boolean) whether to provide detailed results
+#'
+#'@examples
+#'
+#'#Basic example with varying response rates
+#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#' phibar = c(.2, .1, .05),
+#' n_max = 5000)
+#'
+#'#Expanded example with more varying factors
+#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#'                           phibar_h = c(.2, .1, .05),
+#'                           tau_h = c(1.1, 1.2, 1.3),
+#'                           c_NR_h = 2:4,
+#'                           n_max = 5e4)
+#'
+#'#Same as above but fix total costs
+#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#'                           phibar_h = c(.2, .1, .05),
+#'                           tau_h = c(1.1, 1.2, 1.3),
+#'                           c_NR_h = 2:4,
+#'                           c_max = 5e4)
+#'
+#'\dontrun{
+#'#gives warning due to excessive n_h's
+#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#'                           phibar_h = c(.2, .1, .05),
+#'                           tau_h = c(1.1, 1.2, 1.3),
+#'                           c_NR_h = 2:4,
+#'                           c_max = 5e6)
+#'}
+#'@export
+calc_opt_nh_nonresp_given_zeta <- function(N_h,
+                                           S_h = NULL,
+                                           phibar_h,
+                                           n_max = NULL,
+                                           c_max = NULL,
+                                           zeta_h = NULL,
+                                           c_NR_h = NULL,
+                                           tau_h = NULL,
+                                           strict_flag = TRUE,
+                                           verbose_flag = FALSE) {
+
+  #Check object lengths
+  H <- length(N_h)
+  if(length(N_h) != length(phibar_h)) stop("N_h and phibar_h are different lengths")
+
+  if(!xor(!is.null(n_max),
+          !is.null(c_max))) {
+    stop("User must specify n_max or c_max")
+  }
+
+  if(is.null(n_max)) {
+    #If allocating based on costs, user must input costs
+    if(is.null(c_NR_h)) stop("User must specify n_max or provide cost information (c_NR_h is missing)")
+    if(is.null(tau_h)) stop("User must specify n_max or provide cost information (tau_h is missing)")
+  }
+
+  if(is.null(S_h)) S_h <- rep(1, H)
+  if(is.null(zeta_h)) zeta_h <- rep(1, H)
+  if(is.null(c_NR_h)) c_NR_h <- rep(1, H)
+  if(is.null(tau_h)) tau_h <- rep(1, H)
+  if(length(N_h) != length(S_h)) {
+    stop("N_h and S_h are different lengths")
+  }
+  if(length(N_h) != length(zeta_h)) {
+    stop("N_h and zeta_h are different lengths")
+  }
+  if(length(N_h) != length(c_NR_h)) {
+    stop("N_h and c_NR_h are different lengths")
+  }
+  if(length(N_h) != length(tau_h)) {
+    stop("N_h and tau_h are different lengths")
+  }
+
+  nh_propto_num <- N_h * S_h * sqrt(zeta_h)
+  nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+  nh_propto <- nh_propto_num / nh_propto_denom
+
+  nh_one_invitee <- nh_propto / sum(nh_propto)
+
+  if(!is.null(n_max)) {
+    n_h <- nh_one_invitee * n_max
+    if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
+  } else {
+    exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+    n_h <- nh_one_invitee * c_max / exp_cost_per_invitee
+    C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h)
+  }
+
+  res <- n_h
+
+  if(!all(n_h <= N_h)) {
+    my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
+    if(strict_flag == FALSE) {
+      warning(my_error_msg)
+    } else {
+      stop(my_error_msg)
+    }
+  }
+
+  if(verbose_flag) {
+    results_tbl <- tibble::tibble(N_h = N_h,
+                                  S_h = S_h,
+                                  zeta_h = zeta_h,
+                                  c_NR_h = c_NR_h,
+                                  tau_h = tau_h,
+                                  phibar_h = phibar_h,
+                                  n_h = n_h,
+                                  C_h = C_h)
+    return(mget(ls()))
+  } else {
+    return(n_h)
+  }
+}
+#codetools::findGlobals(calc_opt_nh_nonresp_given_zeta)
