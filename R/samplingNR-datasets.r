@@ -3,11 +3,12 @@
 #'@description
 #'Population and response rate information for the Federal Voting Assistance
 #'Program's 2016 Post-Election Voting Survey
-#'of U.S. Active Duty Military (PEVS-ADM; FVAP, 2017a).
+#'of U.S. Active Duty Military.
 #'
 #'@details
 #'This table is based on secondary analysis of survey data from
-#'FVAP's 2016 PEVS-ADM.
+#'FVAP's 2016 Post-Election Voting Survey of U.S. Active Duty Military
+#'(PEVS-ADM).
 #'The sampling frame reflects U.S. Active Duty Military, as of
 #'July 2016, based on administrative data from the
 #'U.S. Defense Manpower Data Center (DMDC); see FVAP's technical
