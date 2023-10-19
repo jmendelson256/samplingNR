@@ -10,7 +10,7 @@ library(dplyr)
 
 env11_pevs_adm <- readRDS("C:/Users/jmend/Documents/JPSM/Dissertation/R packages/samplingNR/data-raw/env11_pevs_adm.rds")
 
-pevs_adm_2016_rr <-
+pevs_adm_2016_rrs <-
   env11_pevs_adm$fvap_alloc50_table_for_output_with_total[1:91,] %>%
   select(h:rr_h) %>%
   rename(service = eps_svc,
@@ -23,4 +23,4 @@ pevs_adm_2016_rr <-
   mutate(h = as.character(h))
 
 #usethis::use_data(pevs_adm_2016_rr, overwrite = TRUE)
-usethis::use_data(pevs_adm_2016_rr)
+usethis::use_data(pevs_adm_2016_rrs)
