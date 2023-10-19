@@ -159,7 +159,7 @@ calc_zeta <- function(n_h,
 #'@param ... other arguments to pass on to \code{opt_nh_nonresp_oneiter()}
 #'           for applying individual iterations
 #'@param tol (scalar) tolerance (for stopping)
-#'@param max_iter (scalar) max number of iterations (>=1)
+#'@param max_iter (scalar) maximum number of iterations (>=2)
 #'@param verbose_flag (bool) whether to provide detailed results
 ##@param browser_flag (bool) whether to open a browser for debugging purposes
 #'@returns  \code{\link{opt_nh_nonresp}} returns sample allocation
@@ -206,7 +206,7 @@ opt_nh_nonresp <- function(N_h,
                            ...) {
   #if(browser_flag) browser()
   stopifnot(length(max_iter)==1)
-  stopifnot(max_iter>=1)
+  stopifnot(max_iter>=2)
 
   dotdotdot_var_in_formals <- names(list(...)) %in% names(formals(opt_nh_nonresp_oneiter))
   if(!all(dotdotdot_var_in_formals)) {
@@ -230,7 +230,7 @@ opt_nh_nonresp <- function(N_h,
   iter <- 1
   max_nh_delta <- Inf
 
-  while(iter <= max_iter & max_nh_delta > tol) {
+  while(iter < max_iter & max_nh_delta > tol) {
     iter <- iter + 1
 
     nh_args <- append(list(N_h = N_h,
@@ -244,17 +244,16 @@ opt_nh_nonresp <- function(N_h,
 
     max_nh_delta <- max(abs(nh_list[[iter]] - nh_list[[iter-1]]))
   }
+
   nh_list <- nh_list[1:iter]
   zeta_list <- zeta_list[1:iter]
 
   n_h <- nh_list[[iter]]
   zeta_h_min_1 <- zeta_list[[iter-1]]
-  zeta_h <- zeta_list[[iter]]
 
   res <- n_h
   attr(res, "num_iter") <- iter
   attr(res, "zeta_h_min_1") <- zeta_h_min_1
-  #attr(res, "zeta_h") <- zeta_h
   attr(res, "max_nh_delta") <- max_nh_delta
 
   if(verbose_flag) {
