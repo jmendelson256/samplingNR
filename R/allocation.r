@@ -66,7 +66,6 @@
 #'#Note that n_h is adjusted in strata 1 and 4 since n_h * phibar_h < 3.5
 #'calc_zeta(n_h = c(100, 200, 300, 300),
 #'          phibar_h = c(.03, .02, .05, .005))
-#'
 #'@export
 calc_zeta <- function(n_h,
                       phibar_h,
@@ -103,10 +102,10 @@ calc_zeta <- function(n_h,
 
 #'Calculates alloc iteratively, and assuming n_h <= N_h
 #'
-#'Like calc_opt_nh_nonresp_given_zeta, but iterative.
+#'Like opt_nh_nonresp_oneiter, but iterative.
 #'Calculates allocation iteratively in manner accounting for zeta, as follows:\enumerate{
 #'  \item Iteration 1. \itemize{
-#'    \item Calculate nh_1 via calc_opt_nh_nonresp_given_zeta() ignoring zeta.
+#'    \item Calculate nh_1 via opt_nh_nonresp_oneiter() ignoring zeta.
 #'    \item Calculate zeta_h_1 via calc_zeta for nh_1
 #'  }
 #'  \item Iterative k (for \eqn{k>=2}): \itemize{
@@ -121,12 +120,12 @@ calc_zeta <- function(n_h,
 #'
 #'@param N_h (vec) strata pop counts
 #'@param phibar_h (vec) response rates by strata
-#'@param ... other params to pass on to \code{calc_opt_nh_nonresp_given_zeta()}
+#'@param ... other arguments to pass on to \code{opt_nh_nonresp_oneiter()}
+#'           for applying individual iterations
 #'@param tol (scalar) tolerance (for stopping)
 #'@param max_iter (scalar) max number of iterations (>=1)
 #'@param verbose_flag (bool) whether to provide detailed results
-#'@param browser_flag (bool) whether to open a browser for debugging purposes
-
+##@param browser_flag (bool) whether to open a browser for debugging purposes
 #'@returns \code{n_h}, with the following attributes: \itemize{
 #'  \item \code{num_iter} (scalar) Number of iterations used
 #'  \item \code{zeta_h_min_1} (vector) final zetas as used (i.e., from 2nd-to-last round)
@@ -136,7 +135,7 @@ calc_zeta <- function(n_h,
 #'@examples
 #'#Compute allocation for PEVS-ADM 2016 data set for total sample size of 50k
 #'#Assumes tau = 1 by default
-#'pevs_opt_alloc_50k <- calc_opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
+#'pevs_opt_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
 #'                                          phibar_h = pevs_adm_2016_rrs$rr_h,
 #'                                          n_max = 50000)
 #'
@@ -148,22 +147,23 @@ calc_zeta <- function(n_h,
 #'#View first few rows
 #'head(pevs_adm_alloc_50k_merged)
 #'
+#'@inheritDotParams opt_nh_nonresp_oneiter -zeta_h
 #'@export
-calc_opt_nh_nonresp <- function(N_h,
+opt_nh_nonresp <- function(N_h,
                                 phibar_h,
                                 tol = 1e-8,
                                 max_iter = 20,
                                 verbose_flag = FALSE,
-                                browser_flag = FALSE,
+                                #browser_flag = FALSE,
                                 ...) {
   if(browser_flag) browser()
   stopifnot(length(max_iter)==1)
   stopifnot(max_iter>=1)
 
-  dotdotdot_var_in_formals <- names(list(...)) %in% names(formals(calc_opt_nh_nonresp_given_zeta))
+  dotdotdot_var_in_formals <- names(list(...)) %in% names(formals(opt_nh_nonresp_oneiter))
   if(!all(dotdotdot_var_in_formals)) {
     vars_not_in_formals <- paste0(names(list(...))[!dotdotdot_var_in_formals], collaose = ", ")
-    stop(paste0(c("Contains extraneous vars not in calc_opt_nh_nonresp_given_zeta: ", vars_not_in_formals),
+    stop(paste0(c("Contains extraneous vars not in opt_nh_nonresp_oneiter: ", vars_not_in_formals),
                 collapse = ""))
   }
   if("zeta_h" %in% names(list(...))) stop("zeta should be NULL; will be calculated in procedure")
@@ -176,7 +176,7 @@ calc_opt_nh_nonresp <- function(N_h,
                          phibar_h = phibar_h),
                     list(...))
 
-  nh_list[[1]] <-  do.call(calc_opt_nh_nonresp_given_zeta, nh_args)
+  nh_list[[1]] <-  do.call(opt_nh_nonresp_oneiter, nh_args)
   zeta_list[[1]] <- calc_zeta(n_h = nh_list[[1]],
                               phibar_h = phibar_h)
   iter <- 1
@@ -189,7 +189,7 @@ calc_opt_nh_nonresp <- function(N_h,
                            phibar_h = phibar_h,
                            zeta_h = zeta_list[[iter - 1]]),
                       list(...))
-    nh_list[[iter]] <-  do.call(calc_opt_nh_nonresp_given_zeta, nh_args)
+    nh_list[[iter]] <-  do.call(opt_nh_nonresp_oneiter, nh_args)
 
     zeta_list[[iter]] <- calc_zeta(n_h = nh_list[[iter]],
                                    phibar_h = phibar_h)
@@ -353,19 +353,19 @@ calc_zeta_discrete <- function(n_h,
 #'@examples
 #'
 #'#Basic example with varying response rates
-#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
 #' phibar = c(.2, .1, .05),
 #' n_max = 5000)
 #'
 #'#Expanded example with more varying factors
-#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
 #'                           phibar_h = c(.2, .1, .05),
 #'                           tau_h = c(1.1, 1.2, 1.3),
 #'                           c_NR_h = 2:4,
 #'                           n_max = 5e4)
 #'
 #'#Same as above but fix total costs
-#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
 #'                           phibar_h = c(.2, .1, .05),
 #'                           tau_h = c(1.1, 1.2, 1.3),
 #'                           c_NR_h = 2:4,
@@ -373,16 +373,18 @@ calc_zeta_discrete <- function(n_h,
 #'
 #'\dontrun{
 #'#gives warning due to excessive n_h's
-#' calc_opt_nh_nonresp_given_zeta(N_h = c(1e4, 2e4, 5e4),
+#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
 #'                           phibar_h = c(.2, .1, .05),
 #'                           tau_h = c(1.1, 1.2, 1.3),
 #'                           c_NR_h = 2:4,
 #'                           c_max = 5e6)
 #'}
+#'@describeIn opt_nh_nonresp Compute a single iteration of the
+#'            proposed allocation, conditioned on zeta.
 #'@export
-calc_opt_nh_nonresp_given_zeta <- function(N_h,
-                                           S_h = NULL,
+opt_nh_nonresp_oneiter <- function(N_h,
                                            phibar_h,
+                                           S_h = NULL,
                                            n_max = NULL,
                                            c_max = NULL,
                                            zeta_h = NULL,
@@ -463,4 +465,4 @@ calc_opt_nh_nonresp_given_zeta <- function(N_h,
     return(n_h)
   }
 }
-#codetools::findGlobals(calc_opt_nh_nonresp_given_zeta)
+#codetools::findGlobals(opt_nh_nonresp_oneiter)
