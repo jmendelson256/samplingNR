@@ -16,27 +16,122 @@ knitr::opts_chunk$set(
 # samplingNR
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-`samplingNR` is an R package that allows for computing optimal allocations under anticipated nonresponse. It is still under development.
+`samplingNR` is an R package that allows for computing optimal allocations under anticipated nonresponse.
 
 ## Installation
 
-You can install the development version of samplingNR from [GitHub](https://github.com/) with:
+You can install the development version of `samplingNR` by using a command such as:
 
-``` r
-# install.packages("devtools")
-devtools::install_github("jmendelson256/samplingNR")
+```{r}
+#install.packages("samplingNR_0.2.0.tar.gz")
 ```
 
 ## Example
 
-Placeholder -- add example here.
+The example below shows how to use `samplingNR` to allocate a sample of 50,000 invitees, which implicitly assumes use of the constant cost per invitee scenario (as defined in our paper) and assuming equivalent strata variances across strata (i.e., $S_h = S$ for some constant $S$). The [tibble](https://tibble.tidyverse.org/) `pevs_adm_2016_rrs`, included as an example data set, contains estimated population sizes and response propensities by strata for the 2016 Post-Election Voting Survey of Active Duty Military (PEVS-ADM), as was used in our paper.
+
+We can use the function `opt_nh_nonresp()` to compute the exact (i.e., iteratively computed) version of the optimal allocation under nonresponse, as provided in our paper. We omit the optional argument `S_h`, which defaults to assuming that $S_h$ is constant across strata.
 
 ```{r example}
 library(samplingNR)
-## basic example code
+library(magrittr)
+library(dplyr)
+
+#Compute exact optimum allocation for PEVS-ADM 2016 data set for n = 50k
+#Assumes tau = 1 by default
+pevs_optE_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
+                                      phibar_h = pevs_adm_2016_rrs$rr_h,
+                                      n_max = 50000)
+
+#Merge results into original data frame
+pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs %>%
+  dplyr::mutate(n_h_optE = c(pevs_optE_alloc_50k),
+                zeta_h_optE = attr(pevs_optE_alloc_50k,"zeta_h_min_1"))
+
+#View results
+pevs_adm_alloc_50k_merged
 ```
 
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this. You could also use GitHub Actions to re-render `README.Rmd` every time you push. An example workflow can be found here: <https://github.com/r-lib/actions/tree/v1/examples>.
+The approximate version of this allocation (i.e., assuming that $\zeta_h(.) \approx 1$) can be computed using the function `opt_nh_nonresp_oneiter()`.
 
+```{r}
+pevs_optA_alloc_50k <- opt_nh_nonresp_oneiter(N_h = pevs_adm_2016_rrs$Nhat_h,
+                                              phibar_h = pevs_adm_2016_rrs$rr_h,
+                                              n_max = 50000)
+```
+
+For comparison purposes, we can also compute Neyman allocation of invitees ($n_h^{\textrm(Ninv)}\propto N_h S_h$), which does not adjust for nonresponse, and Neyman allocation of expected respondents ($n_h^{\textrm(Ninv)}\propto N_h S_h / \bar{\phi}_h$), which inflates by the inverse of the anticipated response rates. In each case, we ignore the $S_h$ terms in our applications of these equations given our earlier assumption that $S_h = S$ for some $S$.
+
+The results can be seen to match the tables shown in our paper's Appendix. 
+
+```{r}
+nh_Ninv_propto <- pevs_adm_2016_rrs$Nhat_h
+nh_Ninv <- nh_Ninv_propto / sum(nh_Ninv_propto) * 50000
+
+nh_Nresp_propto <- pevs_adm_2016_rrs$Nhat_h / pevs_adm_2016_rrs$rr_h
+nh_Nresp <- nh_Nresp_propto / sum(nh_Nresp_propto) * 50000
+
+#Make sure allocations are valid
+all(nh_Ninv >= 2 & nh_Ninv <= pevs_adm_2016_rrs$Nhat_h)
+all(nh_Ninv >= 2 & nh_Nresp <= pevs_adm_2016_rrs$Nhat_h)
+
+#Show results
+(pevs_adm_allocs_50k <- 
+  pevs_adm_alloc_50k_merged %>%
+  mutate(n_h_optA = pevs_optA_alloc_50k,
+         n_h_Ninv = nh_Ninv,
+         n_h_Nresp = nh_Nresp) %>%
+  select(c("h", "n_h_Ninv", "n_h_Nresp", "n_h_optA", "n_h_optE", "zeta_h_optE")))
+```
+We also check
+```{r}
+
+```
+
+Further, we can roughly examine performance by computing the number of respondents, Kish's design effect from weighting, and effective number of respondents under each allocation, replicating Table 2 of our paper. The results show that under the given assumptions, the proposed allocation has an effective sample size that is 25\% higher than the Neyman-type allocations.
+
+```{r}
+#Calculate Kish's deff_w for poststratified estimator under nonresponse
+calculate_deff_w <- function (N_h, r_h) {
+  stopifnot(length(N_h) == length(r_h))
+  stopifnot(all(r_h >= 1))
+  stopifnot(all(r_h <= N_h))
+  testthat::expect_equal(all(r_h <= N_h), TRUE)
+
+  w_h <- N_h/r_h
+
+  wbar <- sum(w_h * r_h)/sum(r_h)
+  deff_w <- 1 + 1/sum(r_h) * sum((w_h - wbar)^2 * r_h)/wbar^2
+
+  (deff_w)
+}
+
+#Summarize results from allocation under assumption that r_h = n_h * phibar_h
+summarize_alloc <- function(N_h, phibar_h, n_h) {
+  n_total <- sum(n_h)
+  r_total <- sum(phibar_h * n_h)
+  rr <- r_total / n_total
+  deff_w <- calculate_deff_w(N_h = N_h, r_h = n_h * phibar_h)
+  eff_resp <- r_total / deff_w
+  c(n_total, r_total, rr, deff_w, eff_resp)
+}
+
+#Summarize results of each allocation
+pevs_adm_alloc_summary_list <-
+  lapply(2:5,
+         function(col) summarize_alloc(N_h = pevs_adm_2016_rrs$Nhat_h,
+                                       phibar_h = pevs_adm_2016_rrs$rr_h,
+                                       n_h = unname(unlist(pevs_adm_allocs_50k[,col]))))
+
+names(pevs_adm_alloc_summary_list) <- names(pevs_adm_allocs_50k[,2:5])
+
+pevs_adm_alloc_summary_table <- pevs_adm_alloc_summary_list %>%
+  bind_rows() %>%
+  t()
+
+colnames(pevs_adm_alloc_summary_table) <- c("n_total", "r_total", "rr", "deff_w", "eff_resp")
+tibble::as_tibble(pevs_adm_alloc_summary_table)
+```

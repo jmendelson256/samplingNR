@@ -1,14 +1,19 @@
-url: https://jmendelson256.github.io/samplingNR/
 template:
   bootstrap: 5
 
 reference:
-- title: "Allocation helpers"
+- title: "Allocate sample"
+  desc: Sample allocation functions
+  contents:
+  - opt_nh_nonresp
+- title: "Allocation helper functions"
   desc: Allocation helper functions
   contents:
   - calc_zeta
-- title: "tbinom distribution"
-  desc: Truncated binomial distribution
+- title: "Data sets"
+  contents:
+  - pevs_adm_2016_rrs
+- title: "Truncated binomial distribution"
   contents:
   - calc_moments_truncbinom
   - dtruncbinom
