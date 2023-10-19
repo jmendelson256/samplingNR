@@ -1,4 +1,4 @@
-#' PEVS-ADM 2016 response rate information by poststrata
+#' PEVS-ADM 2016 response rates by poststrata
 #'
 #'@description
 #'Population and response rate information for the Federal Voting Assistance
@@ -54,5 +54,5 @@
 #'U.S. Department of Defense.
 #'\url{https://www.fvap.gov/uploads/FVAP/Reports/PEVS_ADM_TechReport_Final.pdf}
 #'[Accessed 17 January 2023].
-"pevs_adm_2016_rr"
+"pevs_adm_2016_rrs"
 
