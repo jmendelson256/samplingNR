@@ -100,63 +100,111 @@ calc_zeta <- function(n_h,
 }
 #codetools::findGlobals(calc_zeta)
 
-#'Calculates alloc iteratively, and assuming n_h <= N_h
+#'Calculate optimal allocation under anticipated nonresponse
 #'
-#'Like opt_nh_nonresp_oneiter, but iterative.
-#'Calculates allocation iteratively in manner accounting for zeta, as follows:\enumerate{
-#'  \item Iteration 1. \itemize{
-#'    \item Calculate nh_1 via opt_nh_nonresp_oneiter() ignoring zeta.
-#'    \item Calculate zeta_h_1 via calc_zeta for nh_1
-#'  }
-#'  \item Iterative k (for \eqn{k>=2}): \itemize{
-#'    \item Calculate nh_k(N_h, phibar_h, ...) fixing zeta at zeta_h_(k-1)
-#'    \item Calculate zeta_h_k for nh_2
-#'    \item Compare max difference for components of nh_k (versus nh_(k-1)) to tolerance.
-#'    \item If k>=K or maxdiff<tolerance, accept current iteration as solution.
+#'@description
+#'Computes the optimal stratified sampling
+#'allocation under anticipated nonresponse, as proposed in our paper,
+#'which is
+#'\deqn{n_h \propto \frac{N_h S_h \sqrt{\zeta_h(n_h, \bar{\phi}_h)}}
+#'      {\sqrt{\bar{\phi}_h c_h }},}
+#'where \eqn{N_h} is the stratum \eqn{h} population size,
+#'\eqn{S_h} is the stratum \eqn{h},
+#'\eqn{\bar{\phi}_h} is the stratum \eqn{h} average response propensity,
+#'\eqn{\zeta_h(.)} is a variance inflation term that captures variability
+#'in the number of respondents (see \code{\link{calc_zeta}}),
+#'and \eqn{c_h = \textrm{E}(C_h) / n_h = c_{NR_h} \left(\bar{\phi}_h (\tau_h - 1) + 1\right)}
+#'is the expected cost per invitee in stratum \eqn{h}.
+#'The cost structure assumes that nonrespondents and respondents in stratum \eqn{h}
+#'have per-unit costs of \eqn{c_{NR_h}} and \eqn{c_{R_h}}, respectively,
+#'with a ratio of \eqn{\tau_h = c_{R_h}/c_{NR_h}}.
+#'
+#'\code{\link{opt_nh_nonresp}} computes the exact allocation in an iterative fashion
+#' (see Details section); individual iterations are computed using
+#' \code{\link{opt_nh_nonresp_oneiter}}, which conditions on some
+#' given \eqn{\zeta_h(.)}.
+#'
+#'Users must specify either a maximum total sample size (\code{n_max}) or
+#' maximum total expected costs (\code{c_max}), but not both.
+#'Under the cost specification, users must also specify the unit costs
+#' of nonrespondents (\code{c_NR_h}) and the ratio of unit costs
+#' for respondents to that of nonrespondents (\code{tau_h}).
+#'These variables are \eqn{h}-dimensional vectors, but can be supplied as
+#' scalars if equivalent across strata.
+#'
+#'Optionally, the user can also specify the unit population standard deviations,
+#'\code{S_h}, assumed constant across strata by default.
+#'
+#'@details
+#'
+#'\code{\link{opt_nh_nonresp}} computes the optimal allocation iteratively,
+#'as follows: \enumerate{
+#'  \item Iteration \eqn{k=1} calculates \eqn{n_h^1}, under the
+#'  assumption that \eqn{\zeta_h(n_h, \bar{\phi}_h)=1}.
+#'  \item For each subsequent iteration \eqn{k}, for \eqn{k = 2, 3, ...,}
+#'  do the following: \itemize{
+#'    \item Compute \eqn{\zeta_h(n_h^{k-1}, \bar{\phi}_h)}.
+#'    \item Compute \eqn{n_h^k} under the assumption that
+#'    \eqn{\zeta_h(n_h, \bar{\phi}_h) =
+#'    \zeta_h(n_h^{k-1}, \bar{\phi}_h)}.
+#'    \item Accept the solution if the largest component of
+#'     \eqn{n_h^k - n_h^{k-1}} has magnitude below some tolerance (\code{tol})
+#'     or if the maximum number of iterations (\code{max_iter}) has been
+#'     reached. Otherwise, continue.
 #'  }
 #'}
 #'
-#'NOTE: must provide n_max or c_max.
-#'
-#'@param N_h (vec) strata pop counts
-#'@param phibar_h (vec) response rates by strata
+#'@param N_h (vector) strata population counts
+#'@param phibar_h (vector) strata response propensities
 #'@param ... other arguments to pass on to \code{opt_nh_nonresp_oneiter()}
 #'           for applying individual iterations
 #'@param tol (scalar) tolerance (for stopping)
 #'@param max_iter (scalar) max number of iterations (>=1)
 #'@param verbose_flag (bool) whether to provide detailed results
 ##@param browser_flag (bool) whether to open a browser for debugging purposes
-#'@returns \code{n_h}, with the following attributes: \itemize{
+#'@returns  \code{\link{opt_nh_nonresp}} returns sample allocation
+#'  vector \code{n_h} with the following attributes: \itemize{
 #'  \item \code{num_iter} (scalar) Number of iterations used
-#'  \item \code{zeta_h_min_1} (vector) final zetas as used (i.e., from 2nd-to-last round)
-#'  \item \code{max_nh_delta} (scalar) biggest change in stratum allocation from previous round
+#'  \item \code{zeta_h_min_1} (vector) final values of zeta used
+#'                            (i.e., from 2nd-to-last round)
+#'  \item \code{max_nh_delta} (scalar) biggest change in stratum
+#'                             allocation from previous round
 #'}
 #'
 #'@examples
-#'#Compute allocation for PEVS-ADM 2016 data set for total sample size of 50k
-#'#Assumes tau = 1 by default
-#'pevs_opt_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
-#'                                          phibar_h = pevs_adm_2016_rrs$rr_h,
-#'                                          n_max = 50000)
+#' #Compute exact optimum allocation for PEVS-ADM 2016 data set for n = 50k
+#' #Assumes tau = 1 by default
+#' pevs_optE_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
+#'                                       phibar_h = pevs_adm_2016_rrs$rr_h,
+#'                                       n_max = 50000)
 #'
-#'#Merge results into data frame
-#'pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs %>%
-#'   dplyr::mutate(n_h = c(pevs_opt_alloc_50k),
-#'                 zeta_h = attr(pevs_opt_alloc_50k,"zeta_h_min_1"))
+#' #Merge results into data frame
+#' (pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs %>%
+#'   dplyr::mutate(n_h_optE = c(pevs_optE_alloc_50k),
+#'                 zeta_h_optE = attr(pevs_optE_alloc_50k,"zeta_h_min_1")))
 #'
-#'#View first few rows
-#'head(pevs_adm_alloc_50k_merged)
+#'
+#'
+#' #For comparison purposes, compute approximate version of proposed allocation
+#' pevs_optA_alloc_50k <- opt_nh_nonresp_oneiter(N_h = pevs_adm_2016_rrs$Nhat_h,
+#'                                               phibar_h = pevs_adm_2016_rrs$rr_h,
+#'                                               n_max = 50000)
+#'
+#' #Merge results to previous tibble and reorder columns to be adjacent
+#' pevs_adm_alloc_50k_merged %>%
+#'   dplyr::mutate(n_h_optA = c(pevs_optA_alloc_50k)) %>%
+#'   dplyr::relocate(zeta_h_optE, .after = "n_h_optA")
 #'
 #'@inheritDotParams opt_nh_nonresp_oneiter -zeta_h
 #'@export
 opt_nh_nonresp <- function(N_h,
-                                phibar_h,
-                                tol = 1e-8,
-                                max_iter = 20,
-                                verbose_flag = FALSE,
-                                #browser_flag = FALSE,
-                                ...) {
-  if(browser_flag) browser()
+                           phibar_h,
+                           tol = 1e-8,
+                           max_iter = 20,
+                           verbose_flag = FALSE,
+                           #browser_flag = FALSE,
+                           ...) {
+  #if(browser_flag) browser()
   stopifnot(length(max_iter)==1)
   stopifnot(max_iter>=1)
 
@@ -336,62 +384,68 @@ calc_zeta_discrete <- function(n_h,
 #'Calculates one iteration of proposed optimal allocation conditioned on some zeta
 #'
 #'@description
-#'Calculates one iteration of proposed allocation via formula for user-supplied zeta, under
-#' the assumption that \eqn{n_h \le N_h}. User must provide n_max or c_max.
+#'\code{\link{opt_nh_nonresp_oneiter}} computes one iteration of the proposed
+#'allocation for some user-supplied \eqn{\zeta_h(.)}.
 #'
 #'@param N_h (vector) strata population counts
+#'@param phibar_h (vector) strata response propensities
 #'@param S_h (vector) strata population standard deviations; constant, by default
-#'@param phibar_h (vector) response rates by strata
 #'@param n_max (scalar) total sample to allocate
 #'@param c_max (scalar) max expected costs to allocate
-#'@param zeta_h (vector; optional) adjustment factor for small variances, if needed
-#'@param c_NR_h (vector; optional) per-unit costs for nonrespondents in stratum h
-#'@param tau_h (vector; optional) ratio of costs for respondents to costs for nonrespondents in stratum h
+#'@param zeta_h (vector; use with \code{opt_nh_nonresp_oneiter}, only;
+#'           optional) adjustment factor to reflect inflation in variances
+#'           from randomness in the number of respondents (default = 1)
+#'@param c_NR_h (vector; use with c_max) per-unit costs for nonrespondents in stratum h
+#'@param tau_h (vector; use with c_max) ratio of costs for respondents to costs for nonrespondents in stratum h
 #'@param strict_flag (boolean) whether to throw error (versus warning) if any n_h > N_h
 #'@param verbose_flag (boolean) whether to provide detailed results
 #'
-#'@examples
+#Old examples (not currently used):
+#
+# #Basic example with varying response rates
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+# phibar = c(.2, .1, .05),
+# n_max = 5000)
+#
+# #Expanded example with more varying factors
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+#                           phibar_h = c(.2, .1, .05),
+#                           tau_h = c(1.1, 1.2, 1.3),
+#                           c_NR_h = 2:4,
+#                           n_max = 5e4)
+#
+# #Same as above but fix total costs
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+#                           phibar_h = c(.2, .1, .05),
+#                           tau_h = c(1.1, 1.2, 1.3),
+#                           c_NR_h = 2:4,
+#                           c_max = 5e4)
+#
+# \dontrun{
+# #gives warning due to excessive n_h's
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+#                           phibar_h = c(.2, .1, .05),
+#                           tau_h = c(1.1, 1.2, 1.3),
+#                           c_NR_h = 2:4,
+#                           c_max = 5e6)
+# }
+#'@returns \code{\link{opt_nh_nonresp_oneiter}} returns sample allocation
+#'         \code{n_h}, computed from a single iteration given
+#'         the user-supplied \code{zeta_h}.
 #'
-#'#Basic example with varying response rates
-#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-#' phibar = c(.2, .1, .05),
-#' n_max = 5000)
-#'
-#'#Expanded example with more varying factors
-#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-#'                           phibar_h = c(.2, .1, .05),
-#'                           tau_h = c(1.1, 1.2, 1.3),
-#'                           c_NR_h = 2:4,
-#'                           n_max = 5e4)
-#'
-#'#Same as above but fix total costs
-#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-#'                           phibar_h = c(.2, .1, .05),
-#'                           tau_h = c(1.1, 1.2, 1.3),
-#'                           c_NR_h = 2:4,
-#'                           c_max = 5e4)
-#'
-#'\dontrun{
-#'#gives warning due to excessive n_h's
-#' opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-#'                           phibar_h = c(.2, .1, .05),
-#'                           tau_h = c(1.1, 1.2, 1.3),
-#'                           c_NR_h = 2:4,
-#'                           c_max = 5e6)
-#'}
 #'@describeIn opt_nh_nonresp Compute a single iteration of the
-#'            proposed allocation, conditioned on zeta.
+#'            proposed allocation for user-supplied zeta.
 #'@export
 opt_nh_nonresp_oneiter <- function(N_h,
-                                           phibar_h,
-                                           S_h = NULL,
-                                           n_max = NULL,
-                                           c_max = NULL,
-                                           zeta_h = NULL,
-                                           c_NR_h = NULL,
-                                           tau_h = NULL,
-                                           strict_flag = TRUE,
-                                           verbose_flag = FALSE) {
+                                   phibar_h,
+                                   S_h = NULL,
+                                   n_max = NULL,
+                                   c_max = NULL,
+                                   zeta_h = NULL,
+                                   c_NR_h = NULL,
+                                   tau_h = NULL,
+                                   strict_flag = TRUE,
+                                   verbose_flag = FALSE) {
 
   #Check object lengths
   H <- length(N_h)
@@ -399,13 +453,20 @@ opt_nh_nonresp_oneiter <- function(N_h,
 
   if(!xor(!is.null(n_max),
           !is.null(c_max))) {
-    stop("User must specify n_max or c_max")
+    stop("User must specify either n_max or c_max (and not both)")
   }
 
   if(is.null(n_max)) {
     #If allocating based on costs, user must input costs
     if(is.null(c_NR_h)) stop("User must specify n_max or provide cost information (c_NR_h is missing)")
     if(is.null(tau_h)) stop("User must specify n_max or provide cost information (tau_h is missing)")
+
+    #if c_NR_h or tau_h are scalar, apply to all strata
+    if(length(c_NR_h)==1) c_NR_h <- rep(c_NR_h, H)
+    if(length(tau_h)==1) tau_h <- rep(tau_h, H)
+  } else {
+    if(!is.null(tau_h)) stop("tau_h is only intended for use with c_max, but n_max was provided")
+    if(!is.null(c_NR_h)) stop("c_NR_h is only intended for use with c_max, but n_max was provided")
   }
 
   if(is.null(S_h)) S_h <- rep(1, H)
@@ -425,11 +486,18 @@ opt_nh_nonresp_oneiter <- function(N_h,
     stop("N_h and tau_h are different lengths")
   }
 
+  #Check for illogical arguments
+  if(any(phibar_h <= 0)) stop("invalid phibar_h (must be strictly positive)")
+  if(any(phibar_h > 1)) stop("invalid phibar_h (cannot exceed 1)")
+  if(any(S_h <= 0)) stop("invalid S_h (must be strictly positive)")
+  if(any(c_NR_h <= 0)) stop("invalid c_NR_h (must be strictly positive)")
+  if(any(tau_h <= 0)) stop("invalid tau_h (must be strictly positive)")
+
   nh_propto_num <- N_h * S_h * sqrt(zeta_h)
   nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
   nh_propto <- nh_propto_num / nh_propto_denom
 
-  nh_one_invitee <- nh_propto / sum(nh_propto)
+  nh_one_invitee <- nh_propto / sum(nh_propto) #share of sample for strat h
 
   if(!is.null(n_max)) {
     n_h <- nh_one_invitee * n_max
@@ -444,10 +512,10 @@ opt_nh_nonresp_oneiter <- function(N_h,
 
   if(!all(n_h <= N_h)) {
     my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
-    if(strict_flag == FALSE) {
-      warning(my_error_msg)
-    } else {
+    if(strict_flag) {
       stop(my_error_msg)
+    } else {
+      warning(my_error_msg)
     }
   }
 
