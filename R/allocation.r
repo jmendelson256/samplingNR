@@ -322,7 +322,7 @@ opt_nh_nonresp <- function(N_h,
 #'where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h}}.
 #'
 #'@examples
-#'
+#'\dontrun{
 #'#Basic example
 #'calc_zeta_discrete(n_h = c(100, 200, 300, 300),
 #'                   phibar_h = c(.03, .02, .05, .001))
@@ -339,6 +339,7 @@ opt_nh_nonresp <- function(N_h,
 #'                   phibar_h = c(.03, .02, .05, .001),
 #'                   rh_min = 0,
 #'                   verbose_flag = TRUE)
+#'}
 #'@keywords internal
 calc_zeta_discrete <- function(n_h,
                                phibar_h,
