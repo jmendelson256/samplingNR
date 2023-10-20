@@ -66,6 +66,7 @@
 #'#Note that n_h is adjusted in strata 1 and 4 since n_h * phibar_h < 3.5
 #'calc_zeta(n_h = c(100, 200, 300, 300),
 #'          phibar_h = c(.03, .02, .05, .005))
+#'@keywords distributions
 #'@export
 calc_zeta <- function(n_h,
                       phibar_h,
@@ -196,6 +197,7 @@ calc_zeta <- function(n_h,
 #'   dplyr::relocate(zeta_h_optE, .after = "n_h_optA")
 #'
 #'@inheritDotParams opt_nh_nonresp_oneiter -zeta_h
+#'@keywords allocation
 #'@export
 opt_nh_nonresp <- function(N_h,
                            phibar_h,
@@ -340,7 +342,7 @@ opt_nh_nonresp <- function(N_h,
 #'                   rh_min = 0,
 #'                   verbose_flag = TRUE)
 #'}
-#'@keywords internal
+#'@keywords internal distributions
 calc_zeta_discrete <- function(n_h,
                                phibar_h,
                                rh_min = 3.5,
@@ -435,6 +437,7 @@ calc_zeta_discrete <- function(n_h,
 #'
 #'@describeIn opt_nh_nonresp Compute a single iteration of the
 #'            proposed allocation for user-supplied zeta.
+#'@keywords allocation
 #'@export
 opt_nh_nonresp_oneiter <- function(N_h,
                                    phibar_h,

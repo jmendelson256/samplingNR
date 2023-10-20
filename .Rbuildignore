@@ -21,3 +21,4 @@
 ^dev$
 ^\.github$
 ^data-raw$
+^doc$

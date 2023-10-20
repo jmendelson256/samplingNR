@@ -44,7 +44,7 @@
 #'@keywords data
 #'@docType data
 #'@references
-#'Federal Voting Assistance Program. (2017a). 2015–2016 Active Duty Military dataset.
+#'Federal Voting Assistance Program. (2017a). 2015-2016 Active Duty Military dataset.
 #'Federal Voting Assistance Program, U.S. Department of Defense.
 #'\url{https://www.fvap.gov/uploads/FVAP/Surveys/PEV51601_Pub.dta} [Accessed 17 January 2023].
 #'
