@@ -63,7 +63,7 @@ pevs_optA_alloc_50k <- opt_nh_nonresp_oneiter(N_h = pevs_adm_2016_rrs$Nhat_h,
                                               n_max = 50000)
 ```
 
-For comparison purposes, we can also compute Neyman allocation of invitees ($n_h^{\textrm(Ninv)}\propto N_h S_h$), which does not adjust for nonresponse, and Neyman allocation of expected respondents ($n_h^{\textrm(Ninv)}\propto N_h S_h / \bar{\phi}_h$), which inflates by the inverse of the anticipated response rates. In each case, we ignore the $S_h$ terms in our applications of these equations given our earlier assumption that $S_h = S$ for some $S$.
+For comparison purposes, we can also compute Neyman allocation of invitees ($n_h^{\textrm{Ninv}}\propto N_h S_h$), which does not adjust for nonresponse, and Neyman allocation of expected respondents ($n_h^{\textrm{Ninv}}\propto N_h S_h / \bar{\phi}_h$), which inflates by the inverse of the anticipated response rates. In each case, we ignore the $S_h$ terms in our applications of these equations given our earlier assumption that $S_h = S$ for some $S$.
 
 The results can be seen to match the tables shown in our paper's Appendix. 
 
@@ -85,10 +85,6 @@ all(nh_Ninv >= 2 & nh_Nresp <= pevs_adm_2016_rrs$Nhat_h)
          n_h_Ninv = nh_Ninv,
          n_h_Nresp = nh_Nresp) %>%
   select(c("h", "n_h_Ninv", "n_h_Nresp", "n_h_optA", "n_h_optE", "zeta_h_optE")))
-```
-We also check
-```{r}
-
 ```
 
 Further, we can roughly examine performance by computing the number of respondents, Kish's design effect from weighting, and effective number of respondents under each allocation, replicating Table 2 of our paper. The results show that under the given assumptions, the proposed allocation has an effective sample size that is 25\% higher than the Neyman-type allocations.

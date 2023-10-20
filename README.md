@@ -87,9 +87,9 @@ pevs_optA_alloc_50k <- opt_nh_nonresp_oneiter(N_h = pevs_adm_2016_rrs$Nhat_h,
 ```
 
 For comparison purposes, we can also compute Neyman allocation of
-invitees ($n_h^{\textrm(Ninv)}\propto N_h S_h$), which does not adjust
+invitees ($n_h^{\textrm{Ninv}}\propto N_h S_h$), which does not adjust
 for nonresponse, and Neyman allocation of expected respondents
-($n_h^{\textrm(Ninv)}\propto N_h S_h / \bar{\phi}_h$), which inflates by
+($n_h^{\textrm{Ninv}}\propto N_h S_h / \bar{\phi}_h$), which inflates by
 the inverse of the anticipated response rates. In each case, we ignore
 the $S_h$ terms in our applications of these equations given our earlier
 assumption that $S_h = S$ for some $S$.
@@ -132,8 +132,6 @@ all(nh_Ninv >= 2 & nh_Nresp <= pevs_adm_2016_rrs$Nhat_h)
 #> 10 10        354.     108.      218.     219.        1.02
 #> # ℹ 81 more rows
 ```
-
-We also check
 
 Further, we can roughly examine performance by computing the number of
 respondents, Kish’s design effect from weighting, and effective number
