@@ -4,6 +4,9 @@
 #' in a manner that accounts for the anticipated effects of nonresponse
 #' on sample efficiency.
 #'
+#' To get started, try running \code{vignette("samplingNR")} or view
+#' the help page for \code{\link{opt_nh_nonresp}}.
+#'
 #' @docType package
 #' @name samplingNR
 #'
