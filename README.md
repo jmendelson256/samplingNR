@@ -64,7 +64,7 @@ the basic usage is:
       ...
     )
 
-Here, `cmax` denotes the total allowable costs, `c_NR_h` denotes the
+Here, `c_max` denotes the total allowable costs, `c_NR_h` denotes the
 unit costs per nonrespondent (by strata), and `tau_h` denotes the ratio
 of the unit costs per respondent to those of nonrespondents (by strata).
 The arguments `c_NR_h` and `tau_h` can be specified as vectors of
