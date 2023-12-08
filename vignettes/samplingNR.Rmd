@@ -16,13 +16,15 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-The example below shows how to use `samplingNR` to allocate a sample of 50,000 invitees, which implicitly assumes use of the constant cost per invitee scenario (as defined in our paper) and assuming equivalent strata variances across strata (i.e., $S_h = S$ for some constant $S$). The [tibble](https://tibble.tidyverse.org/) `pevs_adm_2016_rrs`, included as an example data set, contains estimated population sizes and response propensities by strata for the 2016 Post-Election Voting Survey of Active Duty Military (PEVS-ADM; FVAP, 2017a, 2017b), as was used in our paper.
+The example below shows how to allocate a sample of 50,000 invitees, when assuming equivalent strata variances across strata (i.e., $S_h = S$ for some constant $S$), in a manner that replicates Table 2 of our paper.
+We assume that stratification, population counts, and anticipated response rates follow from the 
+data set `pevs_adm_2016_rrs`, included in our package. Specifically, the [tibble](https://tibble.tidyverse.org/) `pevs_adm_2016_rrs` contains estimated population sizes and response propensities by poststrata for the 2016 Post-Election Voting Survey of Active Duty Military (PEVS-ADM; FVAP, 2017a, 2017b), as used in our paper.
 
 ## Compute allocations
 
 ### Exact optimal allocation (iterative)
 
-We can use the function `opt_nh_nonresp()` to compute the exact (i.e., iteratively computed) version of the optimal allocation under nonresponse, as provided in our paper. We omit the optional argument `S_h`, which defaults to assuming that $S_h$ is constant across strata.
+We can use the function `opt_nh_nonresp()` to compute the exact (i.e., iteratively computed) version of the optimal allocation under nonresponse, as provided in our paper. We assume that stratification follows that of `pevs_adm_2016_rrs`, and specify the strata population sizes \code{N_h} and anticipated response propensities \code{phibar_h}. We have omitted the optional argument `S_h`, leading to use of the default assumption that $S_h$ is constant across strata. Note that by allocating a fixed sample size, we are implicitly assuming use of the *constant cost per invitee* scenario from our paper. 
 
 ```{r example}
 library(samplingNR)
@@ -46,7 +48,7 @@ pevs_adm_alloc_50k_merged
 
 ### Approximately optimal allocation
 
-The approximate version of this allocation (i.e., assuming that $\zeta_h(.) \approx 1$) can be computed using the function `opt_nh_nonresp_oneiter()`.
+The approximate version of this allocation (i.e., assuming that $\zeta_h(.) \overset{.}{=}1$) can be computed using the function `opt_nh_nonresp_oneiter()`.
 
 ```{r}
 pevs_optA_alloc_50k <- opt_nh_nonresp_oneiter(N_h = pevs_adm_2016_rrs$Nhat_h,

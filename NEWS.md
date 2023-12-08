@@ -1,3 +1,7 @@
+# samplingNR 0.2.1
+
+* Tweaked documentation
+
 # samplingNR 0.2.0
 
 * Ported core functionality from development version (jmpaper3_0.1.0.9016.tar.gz)

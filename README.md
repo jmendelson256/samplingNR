@@ -3,19 +3,15 @@
 
 # samplingNR
 
-<!-- badges: start -->
-<!-- badges: end -->
-
 `samplingNR` is an R package that allows for computing optimal
-allocations under anticipated nonresponse.
+allocations under anticipated nonresponse, as described in our paper.
 
 ## Installation
 
-You can install the development version of `samplingNR` by using a
-command such as:
+You can install `samplingNR` by using a command such as:
 
 ``` r
-#install.packages("samplingNR_0.2.0.tar.gz")
+install.packages("samplingNR_0.2.1.tar.gz")
 ```
 
 ## Vignette
@@ -28,8 +24,9 @@ application to a post-election survey of military personnel.
 
 The main allocation function is `opt_nh_nonresp()`, which provides the
 exact version of our proposed optimal allocation under anticipated
-nonresponse. This function provides the optimal allocation subject to
-constraints on total sample size or on total costs.
+nonresponse. The current version assumes that the goal is to minimize
+the (expected) variance subject to a constraint on the total (expected)
+costs or invited sample size.
 
 ### Fixed total sample size
 
@@ -44,10 +41,10 @@ usage is:
       ...
     )
 
-where vectors `N_h`, `phibar_h`, and `S_h` denote the strata population
-sizes, anticipated response rates, and (optionally) strata variances,
-respectively, and where `n_max` denotes the total sample size. If `S_h`
-is omitted, strata variances are assumed constant across strata.
+where vectors `N_h` and `phibar_h`denote the strata population sizes,
+anticipated response rates, and (optionally) strata variances,
+respectively, and where scalar `n_max` denotes the total sample size. If
+`S_h` is omitted, strata variances are assumed constant across strata.
 
 ### Fixed total costs
 
@@ -69,4 +66,4 @@ unit costs per nonrespondent (by strata), and `tau_h` denotes the ratio
 of the unit costs per respondent to those of nonrespondents (by strata).
 The arguments `c_NR_h` and `tau_h` can be specified as vectors of
 dimension `H` if these quantities vary by strata; alternatively, if
-assumed constant across strata, they can be specified as scalar.
+assumed constant across strata, they can be specified as scalars.
