@@ -1,7 +1,7 @@
 Package: samplingNR
 Type: Package
 Title: Stratified sample allocation under anticipated nonresponse
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: person("Jonathan", "Mendelson", email = "jmendelson@gmail.com", role=c("aut", "cre"))
 Description: Computes stratified sample allocations in a manner that accounts for anticipated nonresponse.
 License: MIT + file LICENSE
