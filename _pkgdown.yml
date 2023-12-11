@@ -7,7 +7,6 @@ reference:
   contents:
   - opt_nh_nonresp
 - title: "Allocation helper functions"
-  desc: Allocation helper functions
   contents:
   - calc_zeta
 - title: "Data sets"

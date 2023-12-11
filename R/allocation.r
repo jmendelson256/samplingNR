@@ -110,7 +110,7 @@ calc_zeta <- function(n_h,
 #'\deqn{n_h \propto \frac{N_h S_h \sqrt{\zeta_h(n_h, \bar{\phi}_h)}}
 #'      {\sqrt{\bar{\phi}_h c_h }},}
 #'where \eqn{N_h} is the stratum \eqn{h} population size,
-#'\eqn{S_h} is the stratum \eqn{h},
+#'\eqn{S_h} is the stratum \eqn{h} unit standard deviation,
 #'\eqn{\bar{\phi}_h} is the stratum \eqn{h} average response propensity,
 #'\eqn{\zeta_h(.)} is a variance inflation term that captures variability
 #'in the number of respondents (see \code{\link{calc_zeta}}),
@@ -120,9 +120,9 @@ calc_zeta <- function(n_h,
 #'have per-unit costs of \eqn{c_{NR_h}} and \eqn{c_{R_h}}, respectively,
 #'with a ratio of \eqn{\tau_h = c_{R_h}/c_{NR_h}}.
 #'
-#'\code{\link{opt_nh_nonresp}} computes the exact allocation in an iterative fashion
+#'\code{opt_nh_nonresp()} computes the exact allocation in an iterative fashion
 #' (see Details section); individual iterations are computed using
-#' \code{\link{opt_nh_nonresp_oneiter}}, which conditions on some
+#' \code{opt_nh_nonresp_oneiter()}, which conditions on some
 #' given \eqn{\zeta_h(.)}.
 #'
 #'Users must specify either a maximum total sample size (\code{n_max}) or
@@ -196,6 +196,7 @@ calc_zeta <- function(n_h,
 #'   dplyr::mutate(n_h_optA = c(pevs_optA_alloc_50k)) %>%
 #'   dplyr::relocate(zeta_h_optE, .after = "n_h_optA")
 #'
+#'@describeIn opt_nh_nonresp computes the exact (i.e., iterative) version of the proposed allocation.
 #'@inheritDotParams opt_nh_nonresp_oneiter -zeta_h
 #'@keywords allocation
 #'@export
@@ -435,7 +436,7 @@ calc_zeta_discrete <- function(n_h,
 #'         \code{n_h}, computed from a single iteration given
 #'         the user-supplied \code{zeta_h}.
 #'
-#'@describeIn opt_nh_nonresp Compute a single iteration of the
+#'@describeIn opt_nh_nonresp computes a single iteration of the
 #'            proposed allocation for user-supplied zeta.
 #'@keywords allocation
 #'@export

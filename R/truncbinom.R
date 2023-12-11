@@ -44,7 +44,7 @@
 #' other negative powers of a positive Bernoullian variate.
 #' \emph{The Annals of Mathematical Statistics, 16}(1), 50-61.
 #'
-#'@seealso \code{\link{calc_moments_truncbinom}} for computing TBinom moments
+#'@seealso \code{\link[=calc_moments_truncbinom]{calc_moments_truncbinom()}} for computing TBinom moments
 #'@keywords distributions
 #'@export
 dtruncbinom <- function(x, size, prob) {
@@ -83,7 +83,7 @@ dtruncbinom <- function(x, size, prob) {
 #'calc_moments_truncbinom(30, .1)
 #'calc_moments_truncbinom(30, .2)
 #'
-#'@seealso \code{\link{dtruncbinom}} for computing TBinom densities
+#'@seealso \code{\link[=dtruncbinom]{dtruncbinom()}} for computing TBinom densities
 #'@keywords distributions
 #'@export
 calc_moments_truncbinom <- function(size, prob) {

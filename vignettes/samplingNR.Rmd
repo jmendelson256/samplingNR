@@ -132,16 +132,19 @@ pevs_adm_alloc_summary_table <- pevs_adm_alloc_summary_list %>%
   bind_rows() %>%
   t()
 
-colnames(pevs_adm_alloc_summary_table) <- c("n_total", "r_total", "rr", "deff_w", "eff_resp")
+colnames(pevs_adm_alloc_summary_table) <- c("n_total", "r_total", "rr", 
+                                            "deff_w", "eff_resp")
 
 ```
 
 ### Results
 
 ```{r}
-(pevs_adm_alloc_summary_tibble <- tibble::as_tibble(pevs_adm_alloc_summary_table, rownames = "alloc"))
+(pevs_adm_alloc_summary_tibble <- 
+   tibble::as_tibble(pevs_adm_alloc_summary_table, rownames = "alloc"))
 
-#View the percent increase in effective sample size from optE relative to Ninv and Nresp
+#View the percent increase in effective sample size from optE relative to Ninv 
+# and Nresp.
 eff_resp_vec <- pevs_adm_alloc_summary_tibble$eff_resp
 eff_resp_vec[4]/eff_resp_vec[1:2] - 1
 ```
