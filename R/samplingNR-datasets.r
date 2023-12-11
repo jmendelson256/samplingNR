@@ -14,7 +14,7 @@
 #'U.S. Defense Manpower Data Center (DMDC); see FVAP's technical
 #'report (2017b) for details.
 #'Our analysis exclusively examines the control group
-#'from FVAP's response rate experiment (\eqn{(n = 77{,}333)});
+#'from FVAP's response rate experiment (\eqn{n = 77{,}333});
 #'we further omit \eqn{1{,}785} sample members who were identified as ineligible
 #'via administative data prior to survey fielding; these
 #'units were in the July 2016 sampling frame, but were identified via
@@ -54,5 +54,6 @@
 #'U.S. Department of Defense.
 #'\url{https://www.fvap.gov/uploads/FVAP/Reports/PEVS_ADM_TechReport_Final.pdf}
 #'[Accessed 17 January 2023].
+#'@noMd
 "pevs_adm_2016_rrs"
 

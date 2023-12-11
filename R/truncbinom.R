@@ -63,7 +63,7 @@ dtruncbinom <- function(x, size, prob) {
 #'
 #'For random variable \eqn{X \sim TBinom(n,p)}, which follows the
 #'(zero)-truncated binomial distribution as defined
-#' by \code{\link{dtruncbinom}} (i.e., binomial
+#' by [dtruncbinom()] (i.e., binomial
 #' distribution with support for zero removed),
 #' computes \eqn{\textrm{E}(X)}, \eqn{\textrm{E}(X^2)},
 #' \eqn{\textrm{Var}(X)}, and \eqn{\textrm{E}(1/x)}.

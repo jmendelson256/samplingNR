@@ -3,7 +3,7 @@
 #'Compute zeta, as defined in paper, with smoothing for fractional n
 #'
 #'@description
-#'\code{calc_zeta} computes
+#'\code{calc_zeta()} computes
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
 #' as defined in the paper.
 #'If there are any strata where the allocation may lead to
@@ -20,7 +20,7 @@
 #'@details
 #'In our paper, we assumed that the number of respondents in stratum \eqn{h}
 #' can be modeled as standard binomial with support for zero removed
-#' (i.e., zero-truncated binomial; see \code{\link{dtruncbinom}}),
+#' (i.e., zero-truncated binomial; see [dtruncbinom()]),
 #' written as \eqn{r_h \sim TBinom(n_h, \bar{\phi}_h)}, where
 #'\eqn{n_h} is the number of invitees in stratum \eqn{h},
 #'\eqn{\bar{\phi}_h} is the average response propensity within stratum \eqn{h},
@@ -113,7 +113,7 @@ calc_zeta <- function(n_h,
 #'\eqn{S_h} is the stratum \eqn{h} unit standard deviation,
 #'\eqn{\bar{\phi}_h} is the stratum \eqn{h} average response propensity,
 #'\eqn{\zeta_h(.)} is a variance inflation term that captures variability
-#'in the number of respondents (see \code{\link{calc_zeta}}),
+#'in the number of respondents (see [calc_zeta()]),
 #'and \eqn{c_h = \textrm{E}(C_h) / n_h = c_{NR_h} \left(\bar{\phi}_h (\tau_h - 1) + 1\right)}
 #'is the expected cost per invitee in stratum \eqn{h}.
 #'The cost structure assumes that nonrespondents and respondents in stratum \eqn{h}
@@ -138,7 +138,7 @@ calc_zeta <- function(n_h,
 #'
 #'@details
 #'
-#'\code{\link{opt_nh_nonresp}} computes the optimal allocation iteratively,
+#'\code{opt_nh_nonresp()} computes the optimal allocation iteratively,
 #'as follows: \enumerate{
 #'  \item Iteration \eqn{k=1} calculates \eqn{n_h^1}, under the
 #'  assumption that \eqn{\zeta_h(n_h, \bar{\phi}_h)=1}.
@@ -163,7 +163,7 @@ calc_zeta <- function(n_h,
 #'@param max_iter (scalar) maximum number of iterations (>=2)
 #'@param verbose_flag (bool) whether to provide detailed results
 ##@param browser_flag (bool) whether to open a browser for debugging purposes
-#'@returns  \code{\link{opt_nh_nonresp}} returns sample allocation
+#'@returns  \code{opt_nh_nonresp()} returns sample allocation
 #'  vector \code{n_h} with the following attributes: \itemize{
 #'  \item \code{num_iter} (scalar) Number of iterations used
 #'  \item \code{zeta_h_min_1} (vector) final values of zeta used
@@ -285,7 +285,7 @@ opt_nh_nonresp <- function(N_h,
 #'@details
 #'In our paper, we assumed that the number of respondents in stratum \eqn{h}
 #' can be modeled as standard binomial with support for zero removed
-#' (i.e., zero-truncated binomial; see \code{\link{dtruncbinom}}),
+#' (i.e., zero-truncated binomial; see [dtruncbinom()]),
 #' written as \eqn{r_h \sim TBinom(n_h, \bar{\phi}_h)}, where
 #'\eqn{n_h} is the number of invitees in stratum \eqn{h},
 #'\eqn{\bar{\phi}_h} is the average response propensity within stratum \eqn{h},
@@ -387,7 +387,7 @@ calc_zeta_discrete <- function(n_h,
 #'Calculates one iteration of proposed optimal allocation conditioned on some zeta
 #'
 #'@description
-#'\code{\link{opt_nh_nonresp_oneiter}} computes one iteration of the proposed
+#'\code{opt_nh_nonresp_oneiter()} computes one iteration of the proposed
 #'allocation for some user-supplied \eqn{\zeta_h(.)}.
 #'
 #'@param N_h (vector) strata population counts
@@ -432,7 +432,7 @@ calc_zeta_discrete <- function(n_h,
 #                           c_NR_h = 2:4,
 #                           c_max = 5e6)
 # }
-#'@returns \code{\link{opt_nh_nonresp_oneiter}} returns sample allocation
+#'@returns \code{opt_nh_nonresp_oneiter()} returns sample allocation
 #'         \code{n_h}, computed from a single iteration given
 #'         the user-supplied \code{zeta_h}.
 #'
