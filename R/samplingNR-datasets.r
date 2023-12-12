@@ -3,12 +3,13 @@
 #'@description
 #'Population and response rate information for the Federal Voting Assistance
 #'Program's 2016 Post-Election Voting Survey
-#'of U.S. Active Duty Military.
+#'of U.S. Active Duty Military, based on secondary analysis of
+#' public use data.
 #'
 #'@details
-#'This table is based on secondary analysis of survey data from
+#'This table is from our paper's secondary analysis of survey data from
 #'FVAP's 2016 Post-Election Voting Survey of U.S. Active Duty Military
-#'(PEVS-ADM).
+#'(PEVS-ADM; FVAP, 2017a).
 #'The sampling frame reflects U.S. Active Duty Military, as of
 #'July 2016, based on administrative data from the
 #'U.S. Defense Manpower Data Center (DMDC); see FVAP's technical
@@ -20,7 +21,7 @@
 #'units were in the July 2016 sampling frame, but were identified via
 #'September 2016 personnel records as no longer being on active duty
 #'(e.g., due to separations or retirements).
-#'Population sizes were estimated from the survey's
+#'Population sizes are estimated from the survey's
 #'base weights for the remaining cases.
 #'
 #'Poststratum response propensities are base-weighted
@@ -29,6 +30,10 @@
 #'(as opposed to excluding ineligibles, as in AAPOR response rates),
 #'so that resulting sample allocation calculations will reflect the
 #'effects of sample loss on the costs of data collection.
+#'Note that a different choice of denominator would not have much impact on
+#'the estimated response rates, considering that an estimated
+#'99.3\% of the invited population meets the study's
+#'screener-based eligibility criteria.
 #'
 #' @format Tibble containing 91 observations and 8 variables. Includes:
 #' \describe{
