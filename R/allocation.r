@@ -158,8 +158,8 @@ calc_zeta <- function(n_h,
 #'  }
 #'}
 #'
-#'@param N_h (vector) strata population counts
-#'@param phibar_h (vector) strata response propensities
+#'@param N_h (vector) strata population counts (\eqn{N_h})
+#'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
 #'@param ... other arguments to pass on to \code{opt_nh_nonresp_oneiter()}
 #'           for applying individual iterations
 #'@param tol (scalar) tolerance (for stopping)
@@ -396,16 +396,18 @@ calc_zeta_discrete <- function(n_h,
 #'\code{opt_nh_nonresp_oneiter()} computes one iteration of the proposed
 #'allocation for some user-supplied \eqn{\zeta_h(.)}.
 #'
-#'@param N_h (vector) strata population counts
-#'@param phibar_h (vector) strata response propensities
-#'@param S_h (vector) strata population standard deviations; constant, by default
+#'@param N_h (vector) strata population counts (\eqn{N_h})
+#'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
+#'@param S_h (vector) strata population standard deviations (\eqn{S_h}); constant, by default
 #'@param n_max (scalar) total sample to allocate
 #'@param c_max (scalar) max expected costs to allocate
 #'@param zeta_h (vector; use with \code{opt_nh_nonresp_oneiter}, only;
 #'           optional) adjustment factor to reflect inflation in variances
 #'           from randomness in the number of respondents (default = 1)
 #'@param c_NR_h (vector; use with c_max) per-unit costs for nonrespondents in stratum h
-#'@param tau_h (vector; use with c_max) ratio of costs for respondents to costs for nonrespondents in stratum h
+#'  (\eqn{c_{NR_h}})
+#'@param tau_h (vector; use with c_max) ratio of costs for respondents to
+#'  costs for nonrespondents in stratum h (\eqn{\tau_h})
 #'@param strict_flag (boolean) whether to throw error (versus warning) if any n_h > N_h
 #'@param verbose_flag (boolean) whether to provide detailed results
 #'
@@ -443,7 +445,8 @@ calc_zeta_discrete <- function(n_h,
 #'         the user-supplied \code{zeta_h}.
 #'
 #'@describeIn opt_nh_nonresp computes a single iteration of the
-#'            proposed allocation for user-supplied zeta.
+#'            proposed allocation for user-supplied \code{zeta_h}
+#'            (used in place of the \eqn{\zeta_h(.)} term).
 #'@keywords allocation
 #'@export
 opt_nh_nonresp_oneiter <- function(N_h,
