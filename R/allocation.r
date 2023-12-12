@@ -1,15 +1,16 @@
 # Exported functions ====================
 
-#'Compute zeta, as defined in paper, with smoothing for fractional n
+#'Compute variance inflation factor from uncertainty in responding sample size
+#' (with smoothing for continuous \eqn{n_h})
 #'
 #'@description
-#'\code{calc_zeta()} computes
+#'Computes
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
 #' as defined in the paper.
 #'If there are any strata where the allocation may lead to
-#' \eqn{\mathrm{E}(r_h) < 3.5}, we evaluate
-#' \eqn{\zeta_h(.)} using
-#' \eqn{n_h':= max\left(n_h, \left\lceil
+#' \eqn{\mathrm{E}(r_h) < r_h^{LB}} for user-specified \eqn{r_h^{LB}}
+#' (3.5 by default), then \eqn{\zeta_h(.)} is evaluated
+#'  using \eqn{n_h':= max\left(n_h, \left\lceil
 #'      \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #' in place of \eqn{n_h}.
 #'Further, \eqn{\zeta_h(.)} is computed for continuous \eqn{n_h}
@@ -29,9 +30,11 @@
 #'Our paper defines the function
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)}.
 #'This quantity is a variance inflation term that captures the effect of
-#'variability in the number of respondents for a given allocation.
+#'variability in the number of respondents for a given allocation
+#'(when computing the variance of the poststratified estimator under nonresponse
+#'for the finite population mean).
 #'
-#'For discrete \eqn{n_h}, the current function (\code{calc_zeta})
+#'For discrete \eqn{n_h}, the current function (\code{calc_zeta()})
 #'computes \eqn{\zeta_h(n_h', \bar{\phi}_h)}, where we use
 #'\eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #'to avoid underallocating to strata with too few expected respondents, and
@@ -52,14 +55,14 @@
 #'     \zeta_h(\lfloor n_h \rfloor + 1,\bar{\phi}_h),}
 #' where \eqn{w_h= \left(\lfloor n_h \rfloor + 1\right) - n_h}.
 #'
-#'@param n_h (vector) strata sample sizes (before nonresponse)
-#'@param phibar_h (vector) strata response propensities
-#'@param rh_min (scalar) minimum target respondents per stratum (default 3.5)
+#'@param n_h (vector) strata sample sizes before nonresponse (\eqn{n_h})
+#'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
+#'@param rh_min (scalar) minimum target respondents per stratum (\eqn{r_h^{LB}}); default is 3.5
 #'@param verbose_flag (bool) flag on whether to provide noisy results
 #'
 #'@returns vector of length \eqn{H} containing
 #'\eqn{\left\{\zeta_h(n_h', \bar{\phi}_h):h=1,2,...,H\right\}},
-#'where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h}}.
+#'where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h}}
 #'
 #'@examples
 #'#Basic example
@@ -268,16 +271,17 @@ opt_nh_nonresp <- function(N_h,
 
 # Internal functions ====================
 
-#'Compute zeta, as defined in paper, for integer number of respondents
+#'Compute variance inflation factor from uncertainty in responding sample size
+#' (for integer \eqn{n_h})
 #'
 #'@description
-#'\code{calc_zeta_discrete} computes
+#'Computes
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
-#'as defined in the paper, for integer \eqn{n_h}.
+#' as defined in the paper.
 #'If there are any strata where the allocation may lead to
-#' \eqn{\mathrm{E}(r_h) < 3.5}, we evaluate
-#' \eqn{\zeta_h(.)} using
-#' \eqn{n_h':= max\left(n_h, \left\lceil
+#' \eqn{\mathrm{E}(r_h) < r_h^{LB}} for user-specified \eqn{r_h^{LB}}
+#' (3.5 by default), then \eqn{\zeta_h(.)} is evaluated
+#'  using \eqn{n_h':= max\left(n_h, \left\lceil
 #'      \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #' in place of \eqn{n_h}.
 #'Continuous values of \eqn{n_h} are rounded (by default).
@@ -296,7 +300,7 @@ opt_nh_nonresp <- function(N_h,
 #'This quantity is a variance inflation term that captures the effect of
 #'variability in the number of respondents for a given allocation.
 #'
-#'The current function (\code{calc_zeta_discrete})
+#'The current function (\code{calc_zeta_discrete}())
 #'computes \eqn{\zeta_h(n_h', \bar{\phi}_h)}, where we use
 #'\eqn{n_h':= max\left(n_h, \left\lceil \frac{r_h^{LB}}{\bar{\phi}_h}\right\rceil\right)}
 #'to avoid underallocating to strata with too few expected respondents, and
@@ -313,16 +317,16 @@ opt_nh_nonresp <- function(N_h,
 #'controls whether \eqn{n_h} is rounded to the nearest integer
 #'(as opposed to throwing an error).
 #'
-#'@param n_h (vector) strata sample sizes (before nonresponse)
-#'@param phibar_h (vector) strata response propensities
-#'@param rh_min (scalar) minimum target respondents per stratum (default 3.5)
+#'@param n_h (vector) strata sample sizes before nonresponse (\eqn{n_h})
+#'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
+#'@param rh_min (scalar) minimum target respondents per stratum (\eqn{r_h^{LB}}); default is 3.5
 #'@param round_flag (bool) specifies whether to round continuous allocations
 #'                         (versus throwing an error)
 #'@param verbose_flag (bool) flag on whether to provide detailed results
 #'
 #'@returns vector of length \eqn{H} containing
 #'\eqn{\left\{\zeta_h(n_h', \bar{\phi}_h):h=1,2,...,H\right\}},
-#'where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h}}.
+#'where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h}}
 #'
 #'@examples
 #'\dontrun{
@@ -343,6 +347,8 @@ opt_nh_nonresp <- function(N_h,
 #'                   rh_min = 0,
 #'                   verbose_flag = TRUE)
 #'}
+#'@seealso [calc_zeta()] for use with continuous \code{n_h}
+#'
 #'@keywords internal distributions
 calc_zeta_discrete <- function(n_h,
                                phibar_h,
@@ -432,7 +438,7 @@ calc_zeta_discrete <- function(n_h,
 #                           c_NR_h = 2:4,
 #                           c_max = 5e6)
 # }
-#'@returns \code{opt_nh_nonresp_oneiter()} returns sample allocation
+#'@returns \code{opt_nh_nonresp_oneiter} returns sample allocation
 #'         \code{n_h}, computed from a single iteration given
 #'         the user-supplied \code{zeta_h}.
 #'
