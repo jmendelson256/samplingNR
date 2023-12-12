@@ -148,5 +148,5 @@ test_that("opt_nh_nonresp test case works", {
   expect_equal(opt_nh3,
                c(opt_iter_nh3))
   expect_equal(attr(opt_iter_nh3, "num_iter"), 3)
-  expect_equal(attr(opt_iter_nh3, "zeta_h_min_1"), zeta_h2)
+  expect_equal(attr(opt_iter_nh3, "zeta_h_prev"), zeta_h2)
 })

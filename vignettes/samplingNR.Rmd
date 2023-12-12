@@ -42,7 +42,7 @@ pevs_optE_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
 #Merge results into original data frame
 pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs %>%
   dplyr::mutate(n_h_optE = c(pevs_optE_alloc_50k),
-                zeta_h_optE = attr(pevs_optE_alloc_50k,"zeta_h_min_1"))
+                zeta_h_optE = attr(pevs_optE_alloc_50k,"zeta_h_prev"))
 
 #View results
 pevs_adm_alloc_50k_merged

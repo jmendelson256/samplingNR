@@ -169,7 +169,7 @@ calc_zeta <- function(n_h,
 #'@returns  \code{opt_nh_nonresp()} returns sample allocation
 #'  vector \code{n_h} with the following attributes: \itemize{
 #'  \item \code{num_iter} (scalar) number of iterations used;
-#'  \item \code{zeta_h_min_1} (vector) final values of \code{zeta_h} used
+#'  \item \code{zeta_h_prev} (vector) final values of \code{zeta_h} used
 #'                            (i.e., from 2nd-to-last iteration); and
 #'  \item \code{max_nh_delta} (scalar) biggest change in stratum
 #'                             allocation from previous round.
@@ -185,7 +185,7 @@ calc_zeta <- function(n_h,
 #' #Merge results into data frame
 #' (pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs %>%
 #'   dplyr::mutate(n_h_optE = c(pevs_optE_alloc_50k),
-#'                 zeta_h_optE = attr(pevs_optE_alloc_50k,"zeta_h_min_1")))
+#'                 zeta_h_optE = attr(pevs_optE_alloc_50k,"zeta_h_prev")))
 #'
 #'
 #'
@@ -255,11 +255,11 @@ opt_nh_nonresp <- function(N_h,
   zeta_list <- zeta_list[1:iter]
 
   n_h <- nh_list[[iter]]
-  zeta_h_min_1 <- zeta_list[[iter-1]]
+  zeta_h_prev <- zeta_list[[iter-1]]
 
   res <- n_h
   attr(res, "num_iter") <- iter
-  attr(res, "zeta_h_min_1") <- zeta_h_min_1
+  attr(res, "zeta_h_prev") <- zeta_h_prev
   attr(res, "max_nh_delta") <- max_nh_delta
 
   if(verbose_flag) {
