@@ -15,18 +15,18 @@
 #'
 #'\eqn{\mathrm{p}(k;n,p) = \mathrm{Pr}(X = k; n, p) =
 #' \frac{\binom{n}{k} p^k (1-p)^{n-k}}{1 - (1-p)^n} \propto
-#' \binom{n}{k} p^k (1-p)^{n-k}}
+#' \binom{n}{k} p^k (1-p)^{n-k}},
 #'
 #'for \eqn{k = 1, 2, ..., n}, and with zero mass, otherwise.
-#' We say that \eqn{X} is truncated binomial with parameters \eqn{(n,p)},
+#' We say that \eqn{X} is \emph{truncated binomial} with parameters \eqn{(n,p)},
 #'  written as \eqn{X \sim TBinom(n,p)},
 #'  and where \eqn{n} refers to the number of trials and
 #'  \eqn{p} refers to the probability of success of each trial for the
 #'  corresponding binomial distribution.
 #'
 #'@param x vector of values
-#'@param size (scalar) number of trials (1 or more)
-#'@param prob (scalar) probability of success on each trial (nonzero)
+#'@param size (scalar) number of trials (\code{n}); must be 1 or more
+#'@param prob (scalar) probability of success on each trial (\code{p}); must be nonzero
 #'
 #'@returns Vector of densities associated with the provided values (x) for given parameters
 #'
@@ -65,16 +65,16 @@ dtruncbinom <- function(x, size, prob) {
 #'(zero)-truncated binomial distribution as defined
 #' by [dtruncbinom()] (i.e., binomial
 #' distribution with support for zero removed),
-#' computes \eqn{\textrm{E}(X)}, \eqn{\textrm{E}(X^2)},
-#' \eqn{\textrm{Var}(X)}, and \eqn{\textrm{E}(1/x)}.
+#' [calc_moments_truncbinom()] computes \eqn{\textrm{E}(X)}, \eqn{\textrm{E}(X^2)},
+#' \eqn{\textrm{Var}(X)}, and \eqn{\textrm{E}(1/X)}.
 #'
 #'@details
 #'Note that moments are computed directly using the probability mass function since there
 #'is not a simple closed form for \eqn{\textrm{E}(1/x)}.
 #'This may lead to slow computation for extremely large numbers of trials.
 #'
-#'@param size scalar number of trials (1 or more)
-#'@param prob scalar probability of success on each trial (nonzero)
+#'@param size scalar number of trials (\code{n}); must be 1 or more
+#'@param prob scalar probability of success on each trial (\code{p}); must be nonzero
 #'
 #'@returns vector containing \eqn{\textrm{E}(X)}, \eqn{\textrm{E}(X^2)},
 #' \eqn{\textrm{Var}(X)}, and \eqn{\textrm{E}(1/x)}
