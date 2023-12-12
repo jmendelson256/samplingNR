@@ -1,6 +1,6 @@
 # samplingNR 0.2.1
 
-* Tweaked documentation
+* Numerous documentation edits
 
 # samplingNR 0.2.0
 
