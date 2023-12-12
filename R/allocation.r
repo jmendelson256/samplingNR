@@ -119,8 +119,8 @@ calc_zeta <- function(n_h,
 #'in the number of respondents (see [calc_zeta()]),
 #'and \eqn{c_h = \textrm{E}(C_h) / n_h = c_{NR_h} \left(\bar{\phi}_h (\tau_h - 1) + 1\right)}
 #'is the expected cost per invitee in stratum \eqn{h}.
-#'The cost structure assumes that nonrespondents and respondents in stratum \eqn{h}
-#'have per-unit costs of \eqn{c_{NR_h}} and \eqn{c_{R_h}}, respectively,
+#'The cost structure assumes that respondents and nonrespondents in stratum \eqn{h}
+#'have per-unit costs of \eqn{c_{R_h}} and \eqn{c_{NR_h}}, respectively,
 #'with a ratio of \eqn{\tau_h = c_{R_h}/c_{NR_h}}.
 #'
 #'\code{opt_nh_nonresp()} computes the exact allocation in an iterative fashion
@@ -128,7 +128,7 @@ calc_zeta <- function(n_h,
 #' \code{opt_nh_nonresp_oneiter()}, which conditions on some
 #' given \eqn{\zeta_h(.)}.
 #'
-#'Users must specify either a maximum total sample size (\code{n_max}) or
+#'Users must specify either the maximum total sample size (\code{n_max}) or the
 #' maximum total expected costs (\code{c_max}), but not both.
 #'Under the cost specification, users must also specify the unit costs
 #' of nonrespondents (\code{c_NR_h}) and the ratio of unit costs
@@ -145,9 +145,9 @@ calc_zeta <- function(n_h,
 #'as follows: \enumerate{
 #'  \item Iteration \eqn{k=1} calculates \eqn{n_h^1}, under the
 #'  assumption that \eqn{\zeta_h(n_h, \bar{\phi}_h)=1}.
-#'  \item For each subsequent iteration \eqn{k}, for \eqn{k = 2, 3, ...,}
-#'  do the following: \itemize{
-#'    \item Compute \eqn{\zeta_h(n_h^{k-1}, \bar{\phi}_h)}.
+#'  \item Each subsequent iteration \eqn{k}, for \eqn{k = 2, 3, ...,}
+#'  does the following: \itemize{
+#'    \item Compute \eqn{\zeta_h(n_h^{k-1}, \bar{\phi}_h)} via [calc_zeta()].
 #'    \item Compute \eqn{n_h^k} under the assumption that
 #'    \eqn{\zeta_h(n_h, \bar{\phi}_h) =
 #'    \zeta_h(n_h^{k-1}, \bar{\phi}_h)}.
@@ -168,11 +168,11 @@ calc_zeta <- function(n_h,
 ##@param browser_flag (bool) whether to open a browser for debugging purposes
 #'@returns  \code{opt_nh_nonresp()} returns sample allocation
 #'  vector \code{n_h} with the following attributes: \itemize{
-#'  \item \code{num_iter} (scalar) Number of iterations used
-#'  \item \code{zeta_h_min_1} (vector) final values of zeta used
-#'                            (i.e., from 2nd-to-last round)
+#'  \item \code{num_iter} (scalar) number of iterations used;
+#'  \item \code{zeta_h_min_1} (vector) final values of \code{zeta_h} used
+#'                            (i.e., from 2nd-to-last iteration); and
 #'  \item \code{max_nh_delta} (scalar) biggest change in stratum
-#'                             allocation from previous round
+#'                             allocation from previous round.
 #'}
 #'
 #'@examples
@@ -408,7 +408,8 @@ calc_zeta_discrete <- function(n_h,
 #'  (\eqn{c_{NR_h}})
 #'@param tau_h (vector; use with c_max) ratio of costs for respondents to
 #'  costs for nonrespondents in stratum h (\eqn{\tau_h})
-#'@param strict_flag (boolean) whether to throw error (versus warning) if any n_h > N_h
+#'@param strict_flag (boolean) whether to throw error (versus warning) if any
+#'  \eqn{n_h > N_h}
 #'@param verbose_flag (boolean) whether to provide detailed results
 #'
 #Old examples (not currently used):
@@ -440,7 +441,7 @@ calc_zeta_discrete <- function(n_h,
 #                           c_NR_h = 2:4,
 #                           c_max = 5e6)
 # }
-#'@returns \code{opt_nh_nonresp_oneiter} returns sample allocation
+#'@returns \code{opt_nh_nonresp_oneiter} returns sample allocation vector
 #'         \code{n_h}, computed from a single iteration given
 #'         the user-supplied \code{zeta_h}.
 #'
