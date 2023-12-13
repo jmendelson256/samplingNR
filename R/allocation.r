@@ -205,11 +205,10 @@ calc_zeta <- function(n_h,
 #'@export
 opt_nh_nonresp <- function(N_h,
                            phibar_h,
+                           ...,
                            tol = 1e-8,
                            max_iter = 20,
-                           verbose_flag = FALSE,
-                           #browser_flag = FALSE,
-                           ...) {
+                           verbose_flag = FALSE) {
   #if(browser_flag) browser()
   stopifnot(length(max_iter)==1)
   stopifnot(max_iter>=2)

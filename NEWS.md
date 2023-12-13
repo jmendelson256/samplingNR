@@ -1,3 +1,8 @@
+# samplingNR 0.2.9000 - dev
+
+* In `opt_nh_nonresp`, move ... to be before optional args
+
+
 # samplingNR 0.2.1
 
 * Numerous documentation edits
