@@ -128,6 +128,47 @@ calc_zeta <- function(n_h,
 #' \code{opt_nh_nonresp_oneiter()}, which conditions on some
 #' given \eqn{\zeta_h(.)}.
 #'
+#'\code{opt_nh_nonresp_oneiter()} minimizes either the (unconditional) variance
+#'or the expected total costs, holding the other constant; as a special case,
+#'in scenarios where unit costs do not depend on strata or response status,
+#'cost can be expressed in terms of the invited sample size.
+#'Thus, the function arguments depend on the type of
+#'optimization objective (\code{objective}).
+#'Beyond the population sizes (\code{N_h}) and anticipated
+#'response rates (\code{phibar_h}), which are always required, supported methods are as follows:
+#'
+#'\itemize{
+#'  \item \code{objective = "min_var"} minimizes the unconditional variance
+#'  subject to a constraint on the total expected costs (\code{cost_target})
+#'  or on the total invited sample size (\code{n_target}).
+#'  If a target cost is specified, then users must also specify the
+#'  unit costs of nonrespondents (\code{c_NR_h}) and the ratio of unit costs
+#'  or respondents to that of nonrespondents (\code{tau_h}).
+#'  Optionally, the user can also specify the unit population
+#'  standard deviations (\code{S_h}), assumed constant across strata by default.
+#'  \item \code{objective = "min_n"} minimizes the invited
+#'  sample size subject to some fixed variance
+#'   (scalar \code{Var_target}).  This requires specifying the \eqn{\{S_h\}}
+#'   as the vector \code{S_h}.  Optionally, in place of supplying
+#'   \code{Var_target}, users may supply the coefficient of variation
+#'   (scalar \code{CV_target}) and population mean (scalar \code{Ybar}),
+#'   in which case the variance target will be computed as
+#'    \code{Var_target=CV_target^2*Ybar^2}.
+#'  \item \code{objective = "min_cost"} minimizes the expected total costs
+#'  subject to some fixed variance (scalar \code{Var_target}).
+#'  Users must specify the unit population standard deviations (\code{S_h}),
+#'  unit costs of nonrespondents (\code{c_NR_h}), and ratio of unit costs for
+#'  respondents to that of nonrespondents (\code{tau_h}).
+#'  Optionally, in place of supplying \code{Var_target}, users may supply
+#'  the coefficient of variation (scalar \code{CV_target}) and
+#'  population mean (scalar \code{Ybar}), in which case the variance target
+#'  will be computed as \code{Var_target=CV_target^2*Ybar^2}.
+#'}
+#'
+#'Unit code information (\code{c_NR_h} and \code{tau_h}) is generally
+#'specified as h-dimensional vectors, but can be supplied as scalars
+#'if equivalent across strata.
+#'
 #'Users must specify either the maximum total sample size (\code{n_max}) or the
 #' maximum total expected costs (\code{c_max}), but not both.
 #'Under the cost specification, users must also specify the unit costs
