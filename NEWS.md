@@ -1,6 +1,9 @@
 # samplingNR 0.2.9000 - dev
 
-* In `opt_nh_nonresp`, move ... to be before optional args
+* In `opt_nh_nonresp`, moved ... to be before optional args
+* In process of adding handling of different types of objectives. Still in progress--
+- Added description of intended handling, but haven't checked rest of description or added new args yet.
+- Haven't programmed yet
 
 
 # samplingNR 0.2.1
