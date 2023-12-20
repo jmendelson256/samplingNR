@@ -410,7 +410,7 @@ calc_zeta_discrete <- function(n_h,
                   n_h = .env$n_h,
                   phibar_h = .env$phibar_h,
                   zeta_h = .data$E_X * .data$E_one_over_X) %>%
-    dplyr::relocate(.data$h)
+    dplyr::relocate("h")
 
   res <- rh_moments$zeta_h
 
