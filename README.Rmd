@@ -42,7 +42,7 @@ opt_nh_nonresp(
   N_h,
   phibar_h,
   S_h = NULL,
-  n_total
+  n_total,
   ...
 )
 ```
@@ -60,7 +60,7 @@ opt_nh_nonresp(
   S_h = NULL,
   cost_total,
   c_NR_h,
-  tau_h
+  tau_h,
   ...
 )
 ```

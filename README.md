@@ -37,7 +37,7 @@ usage is:
       N_h,
       phibar_h,
       S_h = NULL,
-      n_total
+      n_total,
       ...
     )
 
@@ -58,7 +58,7 @@ the basic usage is:
       S_h = NULL,
       cost_total,
       c_NR_h,
-      tau_h
+      tau_h,
       ...
     )
 
