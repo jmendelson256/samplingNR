@@ -129,6 +129,11 @@ calc_zeta <- function(n_h,
 #' given \eqn{\zeta_h(.)}.
 #'
 #'## Objectives, required arguments, and defaults
+#'[opt_nh_nonresp()] supports maximizing precision subject to a fixed budget
+#'or minimizing the use of budget subject to fixed precision.
+#'Budget can refer to expected costs or to invited sample size;
+#'precision can be expressed in terms of variance or the
+#'coefficient of variation (CV).
 #'The population sizes (\code{N_h}) and anticipated response rates
 #'(\code{phibar_h}) are always required, but additional arguments are needed
 #'depending on the optimization objective, as follows:
@@ -147,8 +152,8 @@ calc_zeta <- function(n_h,
 #'  subject to fixed variance (scalar \code{Var_target}).
 #'  Users must specify the \eqn{S_h} (as \code{S_h}) and provide
 #'  unit cost information (\code{c_NR_h} and \code{tau_h}).
-#'  Optionally, in place of \code{Var_target}, users may provide
-#'  the coefficient of variation (\code{CV_target}) and
+#'  Optionally, in place of \code{Var_target}, users may provide both
+#'  the CV target (\code{CV_target}) and
 #'  population mean (\code{Ybar})
 #'  \item \code{objective = "min_n"} minimizes the invited
 #'  sample size subject to some fixed variance
@@ -488,6 +493,9 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
                                    S_h = NULL,
                                    n_total = NULL,
                                    cost_total = NULL,
+                                   Var_target = NULL,
+                                   CV_target = NULL,
+                                   Ybar = NULL,
                                    zeta_h = NULL,
                                    c_NR_h = NULL,
                                    tau_h = NULL,
@@ -498,25 +506,106 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   H <- length(N_h)
   if(length(N_h) != length(phibar_h)) stop("N_h and phibar_h are different lengths")
 
-  if(!xor(!is.null(n_total),
-          !is.null(cost_total))) {
-    stop("User must specify either n_total or cost_total (and not both)")
+  #User must specify exactly one quantity to fix
+  rlang::check_exclusive(n_total, cost_total, Var_target, CV_target)
+  if(!is.null(n_total) && length(n_total)!=1) stop("`n_total` must be a scalar.")
+  if(!is.null(cost_total) && length(cost_total)!=1) stop("`cost_total` must be a scalar.")
+  if(!is.null(Var_target) && length(Var_target)!=1) stop("`Var_target` must be a scalar.")
+  if(!is.null(CV_target) && length(CV_target)!=1) stop("`CV_target` must be a scalar.")
+  if(!is.null(Ybar) && length(Ybar)!=1) stop("`Ybar` must be a scalar.")
+
+  #If objective is provided, check for right args (and no extraneous args)
+  rlang::arg_match(objective)
+
+  was_objective_supplied <- !missing(objective)
+  if(!was_objective_supplied) {
+    #Infer objective from arguments
+    if(!is.null(n_total) | !is.null(cost_total)) {
+      objective <- "min_var"
+    } else {
+      if(is.null(c_NR_h) && is.null(tau_h)) {
+        objective <- "min_n"
+      } else {
+        if(is.null(c_NR_h) || is.null(tau_h))
+          stop(paste0("If a precision constraint is provided, you need to supply both or neither of `c_NR_h` and `tau_h`, ",
+                      "but exactly one was provided.\n",
+                      "(Did you forget to include `",
+                      ifelse(is.null(c_NR_h), "c_NR_h", "tau_h"), "`?)"))
+
+        objective <- "min_cost"
+      }
+    }
   }
+  #print(paste0("objective is ", objective))
 
-  if(is.null(n_total)) {
-    #If allocating based on costs, user must input costs
-    if(is.null(c_NR_h)) stop("User must specify n_total or provide cost information (c_NR_h is missing)")
-    if(is.null(tau_h)) stop("User must specify n_total or provide cost information (tau_h is missing)")
+  if(objective == "min_var") {
+    is_var_fixed <- FALSE
 
-    #if c_NR_h or tau_h are scalar, apply to all strata
-    if(length(c_NR_h)==1) c_NR_h <- rep(c_NR_h, H)
-    if(length(tau_h)==1) tau_h <- rep(tau_h, H)
+    if(was_objective_supplied & is.null(n_total) & is.null(cost_total))
+      stop("`objective=\"min_var\"` was specified without indicating the total sample size (`n_total`) or costs (`cost_total`) to allocate")
+
+    if(!is.null(Ybar)) warning("`Ybar` was provided but is not used when the objective is to minimize the variance.")
+
+    if(!is.null(cost_total)) {
+      objective_detailed <- "Minimize variance subject to fixed total costs"
+
+      #If allocating based on costs, user must input costs
+      if(is.null(c_NR_h)) stop("`cost_total` was provided but `c_NR_h` is missing")
+      if(is.null(tau_h)) stop("`cost_total` was provided but `tau_h` is missing")
+
+      #if c_NR_h or tau_h are scalar, apply to all strata
+      if(length(c_NR_h)==1) c_NR_h <- rep(c_NR_h, H)
+      if(length(tau_h)==1) tau_h <- rep(tau_h, H)
+    } else {
+      objective_detailed <- "Minimize variance subject to fixed total number of invitees"
+
+      #n_total was provided
+      msg_cost <- "Fixing the total sample size to `n_total` means that cost information is extraneous."
+      if(!is.null(tau_h)) stop(paste0("`tau_h` is not intended for use with `n_total`.\n",msg_cost))
+      if(!is.null(c_NR_h)) stop(paste0("`c_NR_h` is not intended for use with `n_total`.\n", msg_cost))
+    }
+
+    #If minimizing the variance, S_h is assumed constant across strata by default
+    if(is.null(S_h)) S_h <- rep(1, H)
   } else {
-    if(!is.null(tau_h)) stop("tau_h is only intended for use with cost_total, but n_total was provided")
-    if(!is.null(c_NR_h)) stop("c_NR_h is only intended for use with cost_total, but n_total was provided")
+    is_var_fixed <- TRUE
+
+    if(is.null(S_h)) stop(paste0("A precision constraint was specified via ",
+                                 ifelse(is.null(Var_target), "`CV_target`", "`Var_target`"),
+                                        ", but `S_h` was not specified."))
+
+    #Check that Ybar is only provided with CV_target and not with Var_target
+    if(!is.null(Var_target)) {
+      if(!is.null(Ybar)) warning("`Ybar` was provided but will not be used, since `Var_target` was provided.")
+    } else {
+      if(is.null(Ybar)) stop("`CV_target` was specified without also specifying the population mean (`Ybar`), and so the variance target cannot be computed.")
+    }
+
+    #If objective was provided, make sure it matches inputs
+    if(was_objective_supplied) {
+      if(objective == "min_cost") {
+        if(is.null(c_NR_h) || is.null(tau_h))
+          stop(paste0("`objective=\"min_cost\"` was specified but without providing cost structure information.\n",
+                      "Did you remember to include both `c_NR_h` and `tau_h`?"))
+      } else if(objective == "min_n") {
+        if(!is.null(c_NR_h) || !is.null(tau_h))
+          stop("`objective=\"min_n\"` was specified but some cost structure information (`c_NR_h` and/or `tau_h`) was included.")
+      }
+    }
+
+    #Record detailed objective
+    if(!is.null(Var_target)) {
+      objective_detailed <-
+        ifelse(is.null(c_NR_h),
+             "Minimize total n subject to fixed variance",
+             "Minimize total costs subject to fixed variance")
+    } else {
+      objective_detailed <- ifelse(is.null(c_NR_h),
+             "Minimize total n subject to fixed CV",
+             "Minimize total costs subject to fixed CV")
+    }
   }
 
-  if(is.null(S_h)) S_h <- rep(1, H)
   if(is.null(zeta_h)) zeta_h <- rep(1, H)
   if(is.null(c_NR_h)) c_NR_h <- rep(1, H)
   if(is.null(tau_h)) tau_h <- rep(1, H)
@@ -540,44 +629,63 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   if(any(c_NR_h <= 0)) stop("invalid c_NR_h (must be strictly positive)")
   if(any(tau_h <= 0)) stop("invalid tau_h (must be strictly positive)")
 
-  nh_propto_num <- N_h * S_h * sqrt(zeta_h)
-  nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
-  nh_propto <- nh_propto_num / nh_propto_denom
+  #Variance target must be strictly positive and finite
+  if(!is.null(Var_target)) {
+    if(!(Var_target > 0 & Var_target < Inf)) stop("`Var_target` must be (strictly) positive and finite")
+  } else if(!is.null(CV_target)){
+    if(!(CV_target > 0 & CV_target < Inf)) stop("`CV_target` must be (strictly) positive and finite")
+    if(!(abs(Ybar) > 0 & abs(Ybar) < Inf)) stop("`Ybar` must be nonzero and finite")
 
-  nh_one_invitee <- nh_propto / sum(nh_propto) #share of sample for strat h
-
-  if(!is.null(n_total)) {
-    n_h <- nh_one_invitee * n_total
-    if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
-  } else {
-    exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
-    n_h <- nh_one_invitee * cost_total / exp_cost_per_invitee
-    C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h)
+    Var_target <- CV_target^2 * Ybar^2
+    if(!(Var_target > 0 & Var_target < Inf))
+      stop(paste0("Choice of `CV_target` and `Ybar` lead to `Var_target`=", Var_target, ".\n",
+                  "However, `Var_target` must be (strictly) positive and finite."))
   }
 
-  res <- n_h
+  (objective_detailed)
+  #Main calculations
 
-  if(!all(n_h <= N_h)) {
-    my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
-    if(strict_flag) {
-      stop(my_error_msg)
-    } else {
-      warning(my_error_msg)
-    }
-  }
+  # if(objective == "min_var") {
 
-  if(verbose_flag) {
-    results_tbl <- tibble::tibble(N_h = N_h,
-                                  S_h = S_h,
-                                  zeta_h = zeta_h,
-                                  c_NR_h = c_NR_h,
-                                  tau_h = tau_h,
-                                  phibar_h = phibar_h,
-                                  n_h = n_h,
-                                  C_h = C_h)
-    return(mget(ls()))
-  } else {
-    return(n_h)
-  }
+
+  # nh_propto_num <- N_h * S_h * sqrt(zeta_h)
+  # nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+  # nh_propto <- nh_propto_num / nh_propto_denom
+  #
+  # nh_one_invitee <- nh_propto / sum(nh_propto) #share of sample for strat h
+  #
+  # if(!is.null(n_total)) {
+  #   n_h <- nh_one_invitee * n_total
+  #   if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
+  # } else {
+  #   exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+  #   n_h <- nh_one_invitee * cost_total / exp_cost_per_invitee
+  #   C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h)
+  # }
+  #
+  # res <- n_h
+  #
+  # if(!all(n_h <= N_h)) {
+  #   my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
+  #   if(strict_flag) {
+  #     stop(my_error_msg)
+  #   } else {
+  #     warning(my_error_msg)
+  #   }
+  # }
+  #
+  # if(verbose_flag) {
+  #   results_tbl <- tibble::tibble(N_h = N_h,
+  #                                 S_h = S_h,
+  #                                 zeta_h = zeta_h,
+  #                                 c_NR_h = c_NR_h,
+  #                                 tau_h = tau_h,
+  #                                 phibar_h = phibar_h,
+  #                                 n_h = n_h,
+  #                                 C_h = C_h)
+  #   return(mget(ls()))
+  # } else {
+  #   return(n_h)
+  # }
 }
 #codetools::findGlobals(opt_nh_nonresp_oneiter)
