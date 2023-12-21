@@ -564,7 +564,9 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 
 
   #Infer objective from arguments
-  inferred_objective <- do.call("infer_objective", rlang::fn_fmls(), quote = TRUE)
+  orig_objective <- objective
+  inferred_objective <- infer_objective(cost_total = cost_total, n_total = n_total, Var_target = Var_target, CV_target = CV_target,
+                                        c_NR_h = c_NR_h, tau_h = tau_h)
   was_objective_supplied <- !missing(objective)
   if(!was_objective_supplied) {
     objective <- inferred_objective
