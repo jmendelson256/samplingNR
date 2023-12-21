@@ -310,7 +310,7 @@ opt_nh_nonresp <- function(N_h,
 
 ## Helper/validation functions ==============
 
-#'Infer optimization goal from opt_nh_nonresp_oneiter arguments
+#'Infer optimization goal from opt_nh_nonresp_oneiter() arguments
 #'
 #'Determines whether the goal is to: \enumerate{
 #' \item minimize variance (subject to fixed total expected cost or fixed total n);
@@ -343,6 +343,47 @@ infer_objective <- function(cost_total = NULL, n_total = NULL, Var_target = NULL
     }
   }
   (objective)
+}
+
+#'Check opt_nh_nonresp_oneiter() arguments under objective=min_var specification
+#'
+#'Checks the arguments for [opt_nh_nonresp_oneiter()].
+#'Assumes the objective is to minimize the variance
+#'(subject to fixed total expected costs or fixed total invited sample size).
+#'
+#'@param was_objective_supplied (bool) flag indicating whether \code{objective} was provided to [opt_nh_nonresp_oneiter()]
+#'
+#'@returns string containing the detailed objective
+#'
+#'@inheritParams opt_nh_nonresp_oneiter
+#'@keywords internal validation
+#'@noMd
+validate_args_min_var <- function(was_objective_supplied,
+                                  n_total = NULL, cost_total = NULL, Ybar = NULL,
+                                  c_NR_h = NULL, tau_h = NULL) {
+
+  if(was_objective_supplied & is.null(n_total) & is.null(cost_total))
+    stop("`objective=\"min_var\"` was specified without indicating the total sample size (`n_total`) or costs (`cost_total`) to allocate")
+
+  if(!is.null(Ybar)) warning("`Ybar` was provided but is not used when the objective is to minimize the variance.")
+
+  if(!is.null(cost_total)) {
+    objective_detailed <- "Minimize variance subject to fixed total expected costs"
+
+    #If allocating based on costs, user must input costs
+    if(is.null(c_NR_h)) stop("`cost_total` was provided but `c_NR_h` is missing")
+    if(is.null(tau_h)) stop("`cost_total` was provided but `tau_h` is missing")
+  } else {
+    objective_detailed <- "Minimize variance subject to fixed total number of invitees"
+
+    stopifnot(!is.null(n_total)) #shouldn't ever fail
+
+    msg_cost <- "Fixing the total sample size to `n_total` means that cost information is extraneous."
+    if(!is.null(tau_h)) stop(paste0("`tau_h` is not intended for use with `n_total`.\n",msg_cost))
+    if(!is.null(c_NR_h)) stop(paste0("`c_NR_h` is not intended for use with `n_total`.\n", msg_cost))
+  }
+
+  (objective_detailed)
 }
 
 ## Main functions ==================
@@ -571,36 +612,19 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   if(!was_objective_supplied) {
     objective <- inferred_objective
   }
-  # #print(paste0("objective is ", objective))
+  #print(paste0("objective is ", objective))
 
 
   ###UNDER DEVELOPMENT -- CHECK CODE AFTER THIS
   if(objective == "min_var") {
     is_var_fixed <- FALSE
 
-    if(was_objective_supplied & is.null(n_total) & is.null(cost_total))
-      stop("`objective=\"min_var\"` was specified without indicating the total sample size (`n_total`) or costs (`cost_total`) to allocate")
+    objective_detailed <- validate_args_min_var(was_objective_supplied = was_objective_supplied,
+                                                n_total = n_total, cost_total = cost_total, c_NR_h = c_NR_h, tau_h = tau_h)
 
-    if(!is.null(Ybar)) warning("`Ybar` was provided but is not used when the objective is to minimize the variance.")
-
-    if(!is.null(cost_total)) {
-      objective_detailed <- "Minimize variance subject to fixed total costs"
-
-      #If allocating based on costs, user must input costs
-      if(is.null(c_NR_h)) stop("`cost_total` was provided but `c_NR_h` is missing")
-      if(is.null(tau_h)) stop("`cost_total` was provided but `tau_h` is missing")
-
-      #if c_NR_h or tau_h are scalar, apply to all strata
-      if(length(c_NR_h)==1) c_NR_h <- rep(c_NR_h, H)
-      if(length(tau_h)==1) tau_h <- rep(tau_h, H)
-    } else {
-      objective_detailed <- "Minimize variance subject to fixed total number of invitees"
-
-      #n_total was provided
-      msg_cost <- "Fixing the total sample size to `n_total` means that cost information is extraneous."
-      if(!is.null(tau_h)) stop(paste0("`tau_h` is not intended for use with `n_total`.\n",msg_cost))
-      if(!is.null(c_NR_h)) stop(paste0("`c_NR_h` is not intended for use with `n_total`.\n", msg_cost))
-    }
+    #if c_NR_h or tau_h are scalar, apply to all strata
+    if(length(c_NR_h)==1) c_NR_h <- rep(c_NR_h, H)
+    if(length(tau_h)==1) tau_h <- rep(tau_h, H)
 
     #If minimizing the variance, S_h is assumed constant across strata by default
     if(is.null(S_h)) S_h <- rep(1, H)

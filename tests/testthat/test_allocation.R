@@ -175,3 +175,43 @@ test_that("opt_nh_nonresp_oneiter throws error for partial cost data", {
                regexp = "Did you forget to include `c_NR_h")
 })
 
+## Check validate_args_min_var() ========
+
+test_that("validate_args_min_var throws error for invalid args", {
+  expect_error(validate_args_min_var(was_objective_supplied = TRUE),
+               regexp = "was specified without indicating the total sample size.*or costs")
+
+  expect_warning(validate_args_min_var(was_objective_supplied = FALSE, n_total = 5, Ybar = 5),
+                 regexp = "Ybar.*was provided but is not used")
+
+  expect_error(validate_args_min_var(was_objective_supplied = FALSE,
+                                     cost_total = 100, c_NR_h = c(2,3)),
+               regexp = "tau_h\` is missing")
+
+  expect_error(validate_args_min_var(was_objective_supplied = FALSE,
+                                     cost_total = 100, tau_h = c(2,3)),
+               regexp = "c_NR_h\` is missing")
+
+  expect_error(validate_args_min_var(was_objective_supplied = FALSE,
+                                     n_total = 100, tau_h = c(2,3)),
+               regexp = "Fixing the total sample size.*means that cost information is extraneous")
+
+  expect_error(validate_args_min_var(was_objective_supplied = FALSE,
+                                     n_total = 100, c_NR_h = c(2,3)),
+               regexp = "Fixing the total sample size.*means that cost information is extraneous")
+
+  expect_error(validate_args_min_var(was_objective_supplied = FALSE,
+                                     n_total = 100, tau_h = c(2,3), c_NR_h = c(2,3)),
+               regexp = "Fixing the total sample size.*means that cost information is extraneous")
+})
+
+test_that("validate_args_min_var returns correct detailed objective", {
+  expect_equal(validate_args_min_var(was_objective_supplied = FALSE,
+                                     cost_total = 100, c_NR_h = c(2,3), tau_h = c(1.1, 1.2)),
+               "Minimize variance subject to fixed total expected costs")
+
+  expect_equal(validate_args_min_var(was_objective_supplied = FALSE,
+                                     n_total = 20),
+               "Minimize variance subject to fixed total number of invitees")
+})
+
