@@ -308,6 +308,45 @@ opt_nh_nonresp <- function(N_h,
 
 # Internal functions ====================
 
+## Helper/validation functions ==============
+
+#'Infer optimization goal from opt_nh_nonresp_oneiter arguments
+#'
+#'Determines whether the goal is to: \enumerate{
+#' \item minimize variance (subject to fixed total expected cost or fixed total n);
+#' \item b) minimize n (subject to fixed variance or CV); or
+#' \item c) minimize cost (subject to fixed variance or CV).
+#'}
+#'
+#'Assumes that exactly one of cost_total, n_total, Var_target, or CV_target was supplied.
+#'
+#'@returns objective (as string)
+#'
+#'@inheritParams opt_nh_nonresp_oneiter
+#'@keywords internal validation
+#'@noMd
+infer_objective <- function(cost_total = NULL, n_total = NULL, Var_target = NULL, CV_target = NULL, c_NR_h = NULL, tau_h = NULL, ...) {
+  if(!is.null(n_total) | !is.null(cost_total)) {
+    objective <- "min_var"
+  } else {
+    if(is.null(c_NR_h) && is.null(tau_h)) {
+      objective <- "min_n"
+    } else {
+      if(is.null(c_NR_h) || is.null(tau_h))
+        stop(paste0("If a precision constraint is provided, you need to supply both or neither of `c_NR_h` and `tau_h`, ",
+                    "but exactly one was provided.\n",
+                    "(Did you forget to include `",
+                    ifelse(is.null(c_NR_h), "c_NR_h", "tau_h"), "`?)"))
+
+      #both cost params were provided
+      objective <- "min_cost"
+    }
+  }
+  (objective)
+}
+
+## Main functions ==================
+
 #'Compute variance inflation factor from uncertainty in responding sample size
 #' (for integer \eqn{n_h})
 #'
@@ -438,6 +477,9 @@ calc_zeta_discrete <- function(n_h,
 #'@param S_h (vector) strata population standard deviations (\eqn{S_h}); constant, by default
 #'@param n_total (scalar) total invited sample size to allocate
 #'@param cost_total (scalar) total expected costs to allocate
+#'@param Var_target (scalar) fixed variance target
+#'@param CV_target (scalar) fixed CV target (for use with \code{Ybar})
+#'@param Ybar (scalar) population mean (use only with \code{CV_target})
 #'@param zeta_h (vector; use with \code{opt_nh_nonresp_oneiter}, only;
 #'           optional) adjustment factor to reflect inflation in variances
 #'           from randomness in the number of respondents (default = 1)
@@ -517,27 +559,20 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   #If objective is provided, check for right args (and no extraneous args)
   rlang::arg_match(objective)
 
+  #Make sure user specified exactly one quantity to fix
+  rlang::check_exclusive(n_total, cost_total, Var_target, CV_target)
+
+
+  #Infer objective from arguments
+  inferred_objective <- do.call("infer_objective", rlang::fn_fmls(), quote = TRUE)
   was_objective_supplied <- !missing(objective)
   if(!was_objective_supplied) {
-    #Infer objective from arguments
-    if(!is.null(n_total) | !is.null(cost_total)) {
-      objective <- "min_var"
-    } else {
-      if(is.null(c_NR_h) && is.null(tau_h)) {
-        objective <- "min_n"
-      } else {
-        if(is.null(c_NR_h) || is.null(tau_h))
-          stop(paste0("If a precision constraint is provided, you need to supply both or neither of `c_NR_h` and `tau_h`, ",
-                      "but exactly one was provided.\n",
-                      "(Did you forget to include `",
-                      ifelse(is.null(c_NR_h), "c_NR_h", "tau_h"), "`?)"))
-
-        objective <- "min_cost"
-      }
-    }
+    objective <- inferred_objective
   }
-  #print(paste0("objective is ", objective))
+  # #print(paste0("objective is ", objective))
 
+
+  ###UNDER DEVELOPMENT -- CHECK CODE AFTER THIS
   if(objective == "min_var") {
     is_var_fixed <- FALSE
 
@@ -606,6 +641,8 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
     }
   }
 
+  if(was_objective_supplied) testthat::expect_equal(objective, inferred_objective) #these should always match
+
   if(is.null(zeta_h)) zeta_h <- rep(1, H)
   if(is.null(c_NR_h)) c_NR_h <- rep(1, H)
   if(is.null(tau_h)) tau_h <- rep(1, H)
@@ -644,48 +681,48 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 
   (objective_detailed)
   #Main calculations
+  if(objective == "min_var") {
+    nh_propto_num <- N_h * S_h * sqrt(zeta_h)
+    nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+    nh_propto <- nh_propto_num / nh_propto_denom
 
-  # if(objective == "min_var") {
+    nh_one_invitee <- nh_propto / sum(nh_propto) #share of sample for strat h
 
+    if(!is.null(n_total)) {
+      n_h <- nh_one_invitee * n_total
+      if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
+    } else {
+      exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+      n_h <- nh_one_invitee * cost_total / exp_cost_per_invitee
+      C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h)
+    }
 
-  # nh_propto_num <- N_h * S_h * sqrt(zeta_h)
-  # nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
-  # nh_propto <- nh_propto_num / nh_propto_denom
-  #
-  # nh_one_invitee <- nh_propto / sum(nh_propto) #share of sample for strat h
-  #
-  # if(!is.null(n_total)) {
-  #   n_h <- nh_one_invitee * n_total
-  #   if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
-  # } else {
-  #   exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
-  #   n_h <- nh_one_invitee * cost_total / exp_cost_per_invitee
-  #   C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h)
-  # }
-  #
-  # res <- n_h
-  #
-  # if(!all(n_h <= N_h)) {
-  #   my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
-  #   if(strict_flag) {
-  #     stop(my_error_msg)
-  #   } else {
-  #     warning(my_error_msg)
-  #   }
-  # }
-  #
-  # if(verbose_flag) {
-  #   results_tbl <- tibble::tibble(N_h = N_h,
-  #                                 S_h = S_h,
-  #                                 zeta_h = zeta_h,
-  #                                 c_NR_h = c_NR_h,
-  #                                 tau_h = tau_h,
-  #                                 phibar_h = phibar_h,
-  #                                 n_h = n_h,
-  #                                 C_h = C_h)
-  #   return(mget(ls()))
-  # } else {
-  #   return(n_h)
-  # }
+    res <- n_h
+
+    if(!all(n_h <= N_h)) {
+      my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
+      if(strict_flag) {
+        stop(my_error_msg)
+      } else {
+        warning(my_error_msg)
+      }
+    }
+
+    if(verbose_flag) {
+      results_tbl <- tibble::tibble(N_h = N_h,
+                                    S_h = S_h,
+                                    zeta_h = zeta_h,
+                                    c_NR_h = c_NR_h,
+                                    tau_h = tau_h,
+                                    phibar_h = phibar_h,
+                                    n_h = n_h,
+                                    C_h = C_h)
+      return(mget(ls()))
+    } else {
+      return(n_h)
+    }
+  } else {
+    return("precision constraint is not yet supported")
+  }
 }
 #codetools::findGlobals(opt_nh_nonresp_oneiter)

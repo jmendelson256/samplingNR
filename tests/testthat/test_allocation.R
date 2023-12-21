@@ -150,3 +150,28 @@ test_that("opt_nh_nonresp test case works", {
   expect_equal(attr(opt_iter_nh3, "num_iter"), 3)
   expect_equal(attr(opt_iter_nh3, "zeta_h_prev"), zeta_h2)
 })
+
+
+# opt_nh_nonresp_oneiter argument checking/validation ==========
+
+## Check infer_objective() ======
+test_that("opt_nh_nonresp_oneiter returns correct objective", {
+  expect_equal(infer_objective(cost_total = 5), "min_var")
+  expect_equal(infer_objective(n_total = 5), "min_var")
+  expect_equal(infer_objective(Var_target = 5), "min_n")
+  expect_equal(infer_objective(CV_target = 5), "min_n")
+  expect_equal(infer_objective(Var_target = 5, c_NR_h = 1, tau_h = 1), "min_cost")
+  expect_equal(infer_objective(CV_target = 5, c_NR_h = 1, tau_h = 1), "min_cost")
+})
+
+test_that("opt_nh_nonresp_oneiter throws error for partial cost data", {
+  expect_error(infer_objective(Var_target = 5, c_NR_h = 1),
+               regexp = "Did you forget to include `tau_h")
+  expect_error(infer_objective(CV_target = 5, c_NR_h = 1),
+               regexp = "Did you forget to include `tau_h")
+  expect_error(infer_objective(Var_target = 5, tau_h = 1),
+               regexp = "Did you forget to include `c_NR_h")
+  expect_error(infer_objective(CV_target = 5, tau_h = 1),
+               regexp = "Did you forget to include `c_NR_h")
+})
+
