@@ -128,6 +128,12 @@ calc_zeta <- function(n_h,
 #' \code{opt_nh_nonresp_oneiter()}, which conditions on some
 #' given \eqn{\zeta_h(.)}.
 #'
+#'opt_nh_nonresp() supports maximizing precision subject to a fixed budget or
+#'minimizing the use of budget subject to fixed precision.
+#'The required arguments depend on how the objective problem is formulated
+#'(see Details section').
+#'
+#'@details
 #'## Objectives, required arguments, and defaults
 #'[opt_nh_nonresp()] supports maximizing precision subject to a fixed budget
 #'or minimizing the use of budget subject to fixed precision.
@@ -177,8 +183,7 @@ calc_zeta <- function(n_h,
 #'specifying cost structure information when aiming to
 #' minimize the invited sample size).
 #'
-#'@details
-#'
+#'## Iterative procedure
 #'\code{opt_nh_nonresp()} computes the optimal allocation iteratively,
 #'as follows: \enumerate{
 #'  \item Iteration \eqn{k=1} calculates \eqn{n_h^1}, under the
@@ -513,6 +518,11 @@ calc_zeta_discrete <- function(n_h,
 #\code{opt_nh_nonresp_oneiter()} computes one iteration of the proposed
 #allocation for some user-supplied \eqn{\zeta_h(.)}.
 #'
+#'@param objective (optional string)
+#'  Objective function indicating whether the objective
+#' is to minimize variance (\code{objective = "min_var"}), minimize the expected total costs
+#' (\code{objective = "min_cost"}), or minimize the total invited sample size (\code{objective = "min_n"}).
+#' Must be one of "min_var", "min_cost", or "min_n".
 #'@param N_h (vector) strata population counts (\eqn{N_h})
 #'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
 #'@param S_h (vector) strata population standard deviations (\eqn{S_h}); constant, by default
