@@ -128,11 +128,18 @@ calc_zeta <- function(n_h,
 #' \code{opt_nh_nonresp_oneiter()}, which conditions on some
 #' given \eqn{\zeta_h(.)}.
 #'
-#'opt_nh_nonresp() supports maximizing precision subject to a fixed budget or
+#'\code{opt_nh_nonresp()} supports maximizing precision subject to a fixed budget or
 #'minimizing the use of budget subject to fixed precision.
 #'The required arguments depend on how the objective problem is formulated
-#'(see Details section').
-#'
+#'In brief, users must:\itemize{
+#' \item specify exactly one of \code{n_total}, \code{cost_total}, \code{Var_target}, or \code{CV_target},
+#'  indicating the value for the quantity to be fixed;
+#' \item specify the cost structure (\code{c_NR_h} and \code{tau_h}) when optimizing or fixing *cost*;
+#' \item *omit* the cost structure when optimizing or fixing the *invited sample size*;
+#' \item specify \code{Ybar} when (and only when) \code{CV_target} is specified; and
+#' \item supply \code{S_h}, unless the intent is to maximize precision while assuming constant variances across strata.
+#'}
+#'See Details section for more information.
 #'@details
 #'## Objectives, required arguments, and defaults
 #'[opt_nh_nonresp()] supports maximizing precision subject to a fixed budget
@@ -329,7 +336,7 @@ opt_nh_nonresp <- function(N_h,
 #'
 #'@inheritParams opt_nh_nonresp_oneiter
 #'@keywords internal validation
-#'@noMd
+#'@noRd
 infer_objective <- function(cost_total = NULL, n_total = NULL, Var_target = NULL, CV_target = NULL, c_NR_h = NULL, tau_h = NULL, ...) {
   if(!is.null(n_total) | !is.null(cost_total)) {
     objective <- "min_var"
@@ -362,7 +369,7 @@ infer_objective <- function(cost_total = NULL, n_total = NULL, Var_target = NULL
 #'
 #'@inheritParams opt_nh_nonresp_oneiter
 #'@keywords internal validation
-#'@noMd
+#'@noRd
 validate_args_min_var <- function(was_objective_supplied,
                                   n_total = NULL, cost_total = NULL, Ybar = NULL,
                                   c_NR_h = NULL, tau_h = NULL) {
@@ -403,7 +410,7 @@ validate_args_min_var <- function(was_objective_supplied,
 #'
 #'@inheritParams opt_nh_nonresp_oneiter
 #'@keywords internal validation
-#'@noMd
+#'@noRd
 validate_args_fixed_var <- function(was_objective_supplied,
                                     objective = NULL,
                                     S_h = NULL,
@@ -609,26 +616,26 @@ calc_zeta_discrete <- function(n_h,
 #\code{opt_nh_nonresp_oneiter()} computes one iteration of the proposed
 #allocation for some user-supplied \eqn{\zeta_h(.)}.
 #'
-#'@param objective (optional string)
-#'  Objective function indicating whether the objective
-#' is to minimize variance (\code{objective = "min_var"}), minimize the expected total costs
-#' (\code{objective = "min_cost"}), or minimize the total invited sample size (\code{objective = "min_n"}).
-#' Must be one of "min_var", "min_cost", or "min_n".
+#'@param objective (string; optional/recommended)
+#'Must be equal to "\code{min_var}", "\code{min_cost}", or "\code{min_n}".
+#'Indicates whether the goal of optimization is to minimize variance, expected cost, or invited sample size, respectively.
 #'@param N_h (vector) strata population counts (\eqn{N_h})
 #'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
-#'@param S_h (vector) strata population standard deviations (\eqn{S_h}); constant, by default
+#'@param S_h (vector) strata population standard deviations (\eqn{S_h}); constant, by default;
+#'required when fixing precision (rather than costs or sample size)
 #'@param n_total (scalar) total invited sample size to allocate
 #'@param cost_total (scalar) total expected costs to allocate
 #'@param Var_target (scalar) fixed variance target
-#'@param CV_target (scalar) fixed CV target (for use with \code{Ybar})
+#'@param CV_target (scalar) fixed CV target (requires use of \code{Ybar})
 #'@param Ybar (scalar) population mean (use only with \code{CV_target})
 #'@param zeta_h (vector; use with \code{opt_nh_nonresp_oneiter}, only;
 #'           optional) adjustment factor to reflect inflation in variances
 #'           from randomness in the number of respondents (default = 1)
-#'@param c_NR_h (vector; use with cost_total) per-unit costs for nonrespondents in stratum h
+#'@param c_NR_h (vector) per-unit costs for nonrespondents in stratum h (use with \code{cost_total} or when optimizing costs)
 #'  (\eqn{c_{NR_h}})
-#'@param tau_h (vector; use with cost_total) ratio of costs for respondents to
+#'@param tau_h (vector) ratio of costs for respondents to
 #'  costs for nonrespondents in stratum h (\eqn{\tau_h})
+#'  (use with \code{cost_total} or when optimizing costs)
 #'@param strict_flag (boolean) whether to throw error (versus warning) if any
 #'  \eqn{n_h > N_h}
 #'@param verbose_flag (boolean) whether to provide detailed results
