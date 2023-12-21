@@ -177,7 +177,7 @@ test_that("opt_nh_nonresp_oneiter throws error for partial cost data", {
 
 ## Check validate_args_min_var() ========
 
-test_that("validate_args_min_var throws error for invalid args", {
+test_that("validate_args_min_var throws error/warning for invalid args", {
   expect_error(validate_args_min_var(was_objective_supplied = TRUE),
                regexp = "was specified without indicating the total sample size.*or costs")
 
@@ -215,3 +215,69 @@ test_that("validate_args_min_var returns correct detailed objective", {
                "Minimize variance subject to fixed total number of invitees")
 })
 
+## Check validate_args_fixed_var() ========
+test_that("validate_args_fixed_var throws error/warning for invalid args", {
+  expect_error(validate_args_fixed_var(was_objective_supplied = FALSE, Var_target = 5),
+               "S_h\` was not specified")
+
+  expect_error(validate_args_fixed_var(was_objective_supplied = FALSE, CV_target = 5),
+               "S_h\` was not specified")
+
+  expect_warning(validate_args_fixed_var(was_objective_supplied = FALSE, S_h = c(1,2),
+                                         Var_target = 5, Ybar = 5),
+                 regexp = "Ybar\` was provided but will not be used")
+
+  expect_error(validate_args_fixed_var(was_objective_supplied = FALSE, S_h = c(1,2),
+                                         CV_target = 5),
+                 regexp = "CV_target\` was specified without also specifying the population mean")
+
+
+})
+
+test_that("validate_args_fixed_var() throws error for mismatch between user-provided objective and other args", {
+  expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
+                                       was_objective_supplied = TRUE, objective = "min_cost"),
+               "min_cost.*was specified but without providing cost structure information")
+
+  expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
+                                       c_NR_h = c(1,2),
+                                       was_objective_supplied = TRUE, objective = "min_cost"),
+               "min_cost.*was specified but without providing cost structure information")
+
+  expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
+                                       tau_h = c(1,2),
+                                       was_objective_supplied = TRUE, objective = "min_cost"),
+               "min_cost.*was specified but without providing cost structure information")
+
+  expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
+                                       was_objective_supplied = TRUE, objective = "min_n", c_NR_h = c(1,2)),
+               "min_n.*was specified but some cost structure information.*was included")
+
+  expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
+                                       was_objective_supplied = TRUE, objective = "min_n", tau_h = c(1,2)),
+               "min_n.*was specified but some cost structure information.*was included")
+
+  expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
+                                       was_objective_supplied = TRUE, objective = "min_n", c_NR_h = c(1,2), tau_h = c(1,2)),
+               "min_n.*was specified but some cost structure information.*was included")
+})
+
+test_that("validate_args_fixed_var returns correct detailed objective", {
+  expect_equal(validate_args_fixed_var(was_objective_supplied = FALSE,
+                                       S_h = c(1,2), Var_target = 5,
+                                       c_NR_h = c(1,2), tau_h = c(1,2)),
+               "Minimize total expected costs subject to fixed variance")
+
+  expect_equal(validate_args_fixed_var(was_objective_supplied = FALSE,
+                                       S_h = c(1,2), Var_target = 5),
+               "Minimize total n subject to fixed variance")
+
+  expect_equal(validate_args_fixed_var(was_objective_supplied = FALSE,
+                                       S_h = c(1,2), CV_target = 5, Ybar = 2,
+                                       c_NR_h = c(1,2), tau_h = c(1,2)),
+               "Minimize total expected costs subject to fixed CV")
+
+  expect_equal(validate_args_fixed_var(was_objective_supplied = FALSE,
+                                       S_h = c(1,2), CV_target = 5, Ybar = 2),
+               "Minimize total n subject to fixed CV")
+})

@@ -391,6 +391,66 @@ validate_args_min_var <- function(was_objective_supplied,
   (objective_detailed)
 }
 
+#'Check opt_nh_nonresp_oneiter() arguments under fixed variance/CV specification
+#'
+#'Checks the arguments for [opt_nh_nonresp_oneiter()].
+#'Assumes the objective is to minimize the costs or invited sample size
+#'subject to fixed variance or fixed CV.
+#'
+#'@param was_objective_supplied (bool) flag indicating whether \code{objective} was provided to [opt_nh_nonresp_oneiter()]. If TRUE, \code{objective} must also be provided to [validate_args_fixed_var()].
+#'
+#'@returns string containing the detailed objective
+#'
+#'@inheritParams opt_nh_nonresp_oneiter
+#'@keywords internal validation
+#'@noMd
+validate_args_fixed_var <- function(was_objective_supplied,
+                                    objective = NULL,
+                                    S_h = NULL,
+                                    Var_target = NULL, CV_target = NULL, Ybar = NULL,
+                                    c_NR_h = NULL, tau_h = NULL) {
+
+  if(is.null(S_h)) stop(paste0("A precision constraint was specified via ",
+                               ifelse(is.null(Var_target), "`CV_target`", "`Var_target`"),
+                               ", but `S_h` was not specified."))
+
+  #Check that Ybar is only provided with CV_target and not with Var_target
+  if(!is.null(Var_target)) {
+    if(!is.null(Ybar)) warning("`Ybar` was provided but will not be used, since `Var_target` was provided.")
+  } else {
+    if(is.null(Ybar)) stop("`CV_target` was specified without also specifying the population mean (`Ybar`), and so the variance target cannot be computed.")
+  }
+
+  #If objective was provided, make sure it matches inputs
+  if(was_objective_supplied) {
+    if(objective == "min_cost") {
+      if(is.null(c_NR_h) || is.null(tau_h))
+        stop(paste0("`objective=\"min_cost\"` was specified but without providing cost structure information.\n",
+                    "Did you remember to include both `c_NR_h` and `tau_h`?"))
+    } else if(objective == "min_n") {
+      if(!is.null(c_NR_h) || !is.null(tau_h))
+        stop("`objective=\"min_n\"` was specified but some cost structure information (`c_NR_h` and/or `tau_h`) was included.")
+    }
+  }
+
+  #Record detailed objective
+  if(!is.null(Var_target)) {
+    objective_detailed <-
+      ifelse(is.null(c_NR_h),
+             "Minimize total n subject to fixed variance",
+             "Minimize total expected costs subject to fixed variance")
+  } else {
+    objective_detailed <- ifelse(is.null(c_NR_h),
+                                 "Minimize total n subject to fixed CV",
+                                 "Minimize total expected costs subject to fixed CV")
+  }
+
+  (objective_detailed)
+}
+
+
+#  is_var_fixed <- TRUE
+
 ## Main functions ==================
 
 #'Compute variance inflation factor from uncertainty in responding sample size
@@ -641,41 +701,11 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   } else {
     is_var_fixed <- TRUE
 
-    if(is.null(S_h)) stop(paste0("A precision constraint was specified via ",
-                                 ifelse(is.null(Var_target), "`CV_target`", "`Var_target`"),
-                                        ", but `S_h` was not specified."))
-
-    #Check that Ybar is only provided with CV_target and not with Var_target
-    if(!is.null(Var_target)) {
-      if(!is.null(Ybar)) warning("`Ybar` was provided but will not be used, since `Var_target` was provided.")
-    } else {
-      if(is.null(Ybar)) stop("`CV_target` was specified without also specifying the population mean (`Ybar`), and so the variance target cannot be computed.")
+    objective_detailed <- validate_args_fixed_var(was_objective_supplied = was_objective_supplied,
+                                                  objective = objective, S_h = S_h,
+                                                  Var_target = Var_target, CV_target = CV_target, Ybar = Ybar,
+                                                  c_NR_h = c_NR_h, tau_h = tau_h)
     }
-
-    #If objective was provided, make sure it matches inputs
-    if(was_objective_supplied) {
-      if(objective == "min_cost") {
-        if(is.null(c_NR_h) || is.null(tau_h))
-          stop(paste0("`objective=\"min_cost\"` was specified but without providing cost structure information.\n",
-                      "Did you remember to include both `c_NR_h` and `tau_h`?"))
-      } else if(objective == "min_n") {
-        if(!is.null(c_NR_h) || !is.null(tau_h))
-          stop("`objective=\"min_n\"` was specified but some cost structure information (`c_NR_h` and/or `tau_h`) was included.")
-      }
-    }
-
-    #Record detailed objective
-    if(!is.null(Var_target)) {
-      objective_detailed <-
-        ifelse(is.null(c_NR_h),
-             "Minimize total n subject to fixed variance",
-             "Minimize total costs subject to fixed variance")
-    } else {
-      objective_detailed <- ifelse(is.null(c_NR_h),
-             "Minimize total n subject to fixed CV",
-             "Minimize total costs subject to fixed CV")
-    }
-  }
 
   if(was_objective_supplied) testthat::expect_equal(objective, inferred_objective) #these should always match
 
