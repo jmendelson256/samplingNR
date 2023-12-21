@@ -12,7 +12,7 @@
 * Outstanding items.
 - Re-read documentation -- still correct?
 - Add unit testing for fixed precision method.
-- Add fn to calculate variance for finite pop mean.
+- Add fn to calculate variance for finite pop mean. Take a look at jmpaper3::calc_EVar_under_nonresp() but may want to remove some of the options that won't be commonly used to avoid user confusion.
 
 # samplingNR 0.2.1
 
