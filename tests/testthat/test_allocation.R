@@ -237,29 +237,29 @@ test_that("validate_args_fixed_var throws error/warning for invalid args", {
 test_that("validate_args_fixed_var() throws error for mismatch between user-provided objective and other args", {
   expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
                                        was_objective_supplied = TRUE, objective = "min_cost"),
-               "min_cost.*was specified but without providing cost structure information")
+               regexp = "min_cost.*was specified but without providing cost structure information")
 
   expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
                                        c_NR_h = c(1,2),
                                        was_objective_supplied = TRUE, objective = "min_cost"),
-               "min_cost.*was specified but without providing cost structure information")
+               regexp = "min_cost.*was specified but without providing cost structure information")
 
   expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
                                        tau_h = c(1,2),
                                        was_objective_supplied = TRUE, objective = "min_cost"),
-               "min_cost.*was specified but without providing cost structure information")
+               regexp = "min_cost.*was specified but without providing cost structure information")
 
   expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
                                        was_objective_supplied = TRUE, objective = "min_n", c_NR_h = c(1,2)),
-               "min_n.*was specified but some cost structure information.*was included")
+               regexp = "min_n.*was specified but some cost structure information.*was included")
 
   expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
                                        was_objective_supplied = TRUE, objective = "min_n", tau_h = c(1,2)),
-               "min_n.*was specified but some cost structure information.*was included")
+               regexp = "min_n.*was specified but some cost structure information.*was included")
 
   expect_error(validate_args_fixed_var(S_h = c(1,2), Var_target = 5,
                                        was_objective_supplied = TRUE, objective = "min_n", c_NR_h = c(1,2), tau_h = c(1,2)),
-               "min_n.*was specified but some cost structure information.*was included")
+               regexp = "min_n.*was specified but some cost structure information.*was included")
 })
 
 test_that("validate_args_fixed_var returns correct detailed objective", {
@@ -280,4 +280,34 @@ test_that("validate_args_fixed_var returns correct detailed objective", {
   expect_equal(validate_args_fixed_var(was_objective_supplied = FALSE,
                                        S_h = c(1,2), CV_target = 5, Ybar = 2),
                "Minimize total n subject to fixed CV")
+})
+
+
+## Check validate_var_target()
+
+
+test_that("validate_var_target() throws error for invalid args", {
+  expect_error(validate_var_target(Var_target = 0),
+               regexp = "must be.* positive and finite")
+
+  expect_error(validate_var_target(Var_target = Inf),
+               regexp = "must be.* positive and finite")
+
+  expect_error(validate_var_target(CV_target = 0),
+               regexp = "must be.* positive and finite")
+
+  expect_error(validate_var_target(CV_target = Inf),
+               regexp = "must be.* positive and finite")
+
+  expect_error(validate_var_target(CV_target = 5, Ybar = 0),
+               regexp = "Ybar\` must be nonzero and finite")
+
+  expect_error(validate_var_target(CV_target = 1e250, Ybar = 1e100),
+               regexp = "Choice of.*lead to \`Var_target`=Inf")
+})
+
+test_that("validate_var_target returns correct target variance", {
+  expect_equal(validate_var_target(Var_target=5),
+               5)
+  expect_equal(validate_var_target(CV_target=10, Ybar=2), 400)
 })

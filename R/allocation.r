@@ -448,8 +448,39 @@ validate_args_fixed_var <- function(was_objective_supplied,
   (objective_detailed)
 }
 
+#'Validates variance targets for opt_nh_nonresp_oneiter()
+#'
+#'Checks the variance targets for validity with [opt_nh_nonresp_oneiter()].
+#'Assumes that there is either a variance target or CV target.
+#'
+#'@returns updated variance target, specifically:
+#' \itemize{
+#' \item \code{Var_target} (if provided directly);
+#' \item \code{CV_target^2 * Ybar^2} otherwise.
+#'}
+#'@inheritParams opt_nh_nonresp_oneiter
+#'@keywords internal validation
+#'@noRd
+validate_var_target <- function(Var_target = NULL, CV_target = NULL, Ybar = NULL) {
+  #Variance target must be strictly positive and finite
+  if(!is.null(Var_target)) {
+    if(!(Var_target > 0 & Var_target < Inf)) stop("`Var_target` must be (strictly) positive and finite")
+  } else if(!is.null(CV_target)){
+    if(!(CV_target > 0 & CV_target < Inf)) stop("`CV_target` must be (strictly) positive and finite")
+    if(!(abs(Ybar) > 0 & abs(Ybar) < Inf)) stop("`Ybar` must be nonzero and finite")
 
-#  is_var_fixed <- TRUE
+    Var_target <- CV_target^2 * Ybar^2
+    if(!(Var_target > 0 & Var_target < Inf))
+      stop(paste0("Choice of `CV_target` and `Ybar` lead to `Var_target`=", Var_target, ".\n",
+                  "However, `Var_target` must be (strictly) positive and finite."))
+  }
+
+  (Var_target)
+}
+
+
+
+
 
 ## Main functions ==================
 
@@ -712,18 +743,10 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   if(is.null(zeta_h)) zeta_h <- rep(1, H)
   if(is.null(c_NR_h)) c_NR_h <- rep(1, H)
   if(is.null(tau_h)) tau_h <- rep(1, H)
-  if(length(N_h) != length(S_h)) {
-    stop("N_h and S_h are different lengths")
-  }
-  if(length(N_h) != length(zeta_h)) {
-    stop("N_h and zeta_h are different lengths")
-  }
-  if(length(N_h) != length(c_NR_h)) {
-    stop("N_h and c_NR_h are different lengths")
-  }
-  if(length(N_h) != length(tau_h)) {
-    stop("N_h and tau_h are different lengths")
-  }
+  if(length(N_h) != length(S_h)) stop("N_h and S_h are different lengths")
+  if(length(N_h) != length(zeta_h)) stop("N_h and zeta_h are different lengths")
+  if(length(N_h) != length(c_NR_h)) stop("N_h and c_NR_h are different lengths")
+  if(length(N_h) != length(tau_h)) stop("N_h and tau_h are different lengths")
 
   #Check for illogical arguments
   if(any(phibar_h <= 0)) stop("invalid phibar_h (must be strictly positive)")
@@ -732,18 +755,10 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   if(any(c_NR_h <= 0)) stop("invalid c_NR_h (must be strictly positive)")
   if(any(tau_h <= 0)) stop("invalid tau_h (must be strictly positive)")
 
-  #Variance target must be strictly positive and finite
-  if(!is.null(Var_target)) {
-    if(!(Var_target > 0 & Var_target < Inf)) stop("`Var_target` must be (strictly) positive and finite")
-  } else if(!is.null(CV_target)){
-    if(!(CV_target > 0 & CV_target < Inf)) stop("`CV_target` must be (strictly) positive and finite")
-    if(!(abs(Ybar) > 0 & abs(Ybar) < Inf)) stop("`Ybar` must be nonzero and finite")
-
-    Var_target <- CV_target^2 * Ybar^2
-    if(!(Var_target > 0 & Var_target < Inf))
-      stop(paste0("Choice of `CV_target` and `Ybar` lead to `Var_target`=", Var_target, ".\n",
-                  "However, `Var_target` must be (strictly) positive and finite."))
-  }
+  #Run variance target through validater
+  #  Ensures that variance target is strictly positive and finite
+  #  Sets either to Var_target (if provided) or CV_target^2*Ybar^2 (when applicable)
+  Var_target <- validate_var_target(Var_target = Var_target, CV_target = CV_target, Ybar = Ybar)
 
   (objective_detailed)
   #Main calculations
