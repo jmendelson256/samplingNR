@@ -1,10 +1,18 @@
-# samplingNR 0.2.9000 - dev
+# samplingNR 0.2.9002 - dev
 
 * In `opt_nh_nonresp`, moved ... to be before optional args
-* In process of adding handling of different types of objectives. Still in progress--
-- Added description of intended handling, but haven't checked rest of description or added new args yet.
-- Haven't programmed yet
-
+* In process of adding handling of different types of objectives. Stuff added so far:
+- Added description of intended handling, but haven't checked rest of description to make sure advice is good on which combos of args to use.
+- Programmed extensive error handling; moved to separate internal fns to try to keep somewhat abstract.  Added extensive testthat functionality; confident it works.
+- Programmed new method -- fixed precision. Seems to work but could add some unit tests.
+* Tried test cases for new method.  Works so far:
+- Took vignette example, calculated variance, then set that as precision target (both ways); same result. Looked over in Excel somewhat.
+- Under complete response, can replicate PracTools vignette example.
+- Under nonresponse, changes allocation in expected way.
+* Outstanding items.
+- Re-read documentation -- still correct?
+- Add unit testing for fixed precision method.
+- Add fn to calculate variance for finite pop mean.
 
 # samplingNR 0.2.1
 
