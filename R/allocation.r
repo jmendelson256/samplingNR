@@ -715,8 +715,6 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   }
   #print(paste0("objective is ", objective))
 
-
-  ###UNDER DEVELOPMENT -- CHECK CODE AFTER THIS
   if(objective == "min_var") {
     is_var_fixed <- FALSE
 
@@ -740,6 +738,7 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 
   if(was_objective_supplied) testthat::expect_equal(objective, inferred_objective) #these should always match
 
+  #Check arg lengths
   if(is.null(zeta_h)) zeta_h <- rep(1, H)
   if(is.null(c_NR_h)) c_NR_h <- rep(1, H)
   if(is.null(tau_h)) tau_h <- rep(1, H)
@@ -760,7 +759,6 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
   #  Sets either to Var_target (if provided) or CV_target^2*Ybar^2 (when applicable)
   Var_target <- validate_var_target(Var_target = Var_target, CV_target = CV_target, Ybar = Ybar)
 
-  (objective_detailed)
   #Main calculations
   if(objective == "min_var") {
     nh_propto_num <- N_h * S_h * sqrt(zeta_h)
@@ -771,39 +769,52 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 
     if(!is.null(n_total)) {
       n_h <- nh_one_invitee * n_total
-      if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
     } else {
       exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
       n_h <- nh_one_invitee * cost_total / exp_cost_per_invitee
-      C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h)
-    }
-
-    res <- n_h
-
-    if(!all(n_h <= N_h)) {
-      my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
-      if(strict_flag) {
-        stop(my_error_msg)
-      } else {
-        warning(my_error_msg)
-      }
-    }
-
-    if(verbose_flag) {
-      results_tbl <- tibble::tibble(N_h = N_h,
-                                    S_h = S_h,
-                                    zeta_h = zeta_h,
-                                    c_NR_h = c_NR_h,
-                                    tau_h = tau_h,
-                                    phibar_h = phibar_h,
-                                    n_h = n_h,
-                                    C_h = C_h)
-      return(mget(ls()))
-    } else {
-      return(n_h)
+      C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h) #total expected costs
     }
   } else {
-    return("precision constraint is not yet supported")
+    stopifnot(objective %in% c("min_n", "min_cost"))
+
+    W_h <- N_h / sum(N_h)
+    c_h <- c_NR_h * (phibar_h * (tau_h - 1) + 1) #E(cost/invitee) in stratum h
+
+    nh_propto <- (W_h * S_h * sqrt(zeta_h) / sqrt(phibar_h * c_h))
+    proportionality_const_num <- sum(W_h * S_h * sqrt(c_h * zeta_h / phibar_h))
+    proportionality_const_denom <- Var_target + sum(W_h * S_h^2 / sum(N_h))
+
+    n_h <- nh_propto * proportionality_const_num / proportionality_const_denom
+
+    C_h <- n_h * c_h #total expected costs in stratum
+    #return("precision constraint is not yet supported")
+  }
+
+  res <- n_h
+
+  if(!all(n_h <= N_h)) {
+    my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
+    if(strict_flag) {
+      stop(my_error_msg)
+    } else {
+      warning(my_error_msg)
+    }
+  }
+
+  if(verbose_flag) {
+    if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
+
+    results_tbl <- tibble::tibble(N_h = N_h,
+                                  S_h = S_h,
+                                  zeta_h = zeta_h,
+                                  c_NR_h = c_NR_h,
+                                  tau_h = tau_h,
+                                  phibar_h = phibar_h,
+                                  n_h = n_h,
+                                  C_h = C_h)
+    return(mget(ls()))
+  } else {
+    return(n_h)
   }
 }
 #codetools::findGlobals(opt_nh_nonresp_oneiter)
