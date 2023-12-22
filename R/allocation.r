@@ -318,6 +318,222 @@ opt_nh_nonresp <- function(N_h,
   }
 }
 
+#'Calculates one iteration of proposed optimal allocation conditioned on some zeta
+#'
+#@description
+#\code{opt_nh_nonresp_oneiter()} computes one iteration of the proposed
+#allocation for some user-supplied \eqn{\zeta_h(.)}.
+#'
+#'@param objective (string; optional/recommended)
+#'Must be equal to "\code{min_var}", "\code{min_cost}", or "\code{min_n}".
+#'Indicates whether the goal of optimization is to minimize variance, expected cost, or invited sample size, respectively.
+#'@param N_h (vector) strata population counts (\eqn{N_h})
+#'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
+#'@param S_h (vector) strata population standard deviations (\eqn{S_h}); constant, by default;
+#'required when fixing precision (rather than costs or sample size)
+#'@param n_total (scalar) total invited sample size to allocate
+#'@param cost_total (scalar) total expected costs to allocate
+#'@param Var_target (scalar) fixed variance target
+#'@param CV_target (scalar) fixed CV target (requires use of \code{Ybar})
+#'@param Ybar (scalar) population mean (use only with \code{CV_target})
+#'@param zeta_h (vector; use with \code{opt_nh_nonresp_oneiter}, only;
+#'           optional) adjustment factor to reflect inflation in variances
+#'           from randomness in the number of respondents (default = 1)
+#'@param c_NR_h (vector) per-unit costs for nonrespondents in stratum h (use with \code{cost_total} or when optimizing costs)
+#'  (\eqn{c_{NR_h}})
+#'@param tau_h (vector) ratio of costs for respondents to
+#'  costs for nonrespondents in stratum h (\eqn{\tau_h})
+#'  (use with \code{cost_total} or when optimizing costs)
+#'@param strict_flag (boolean) whether to throw error (versus warning) if any
+#'  \eqn{n_h > N_h}
+#'@param verbose_flag (boolean) whether to provide detailed results
+#'
+#Old examples (not currently used):
+#
+# #Basic example with varying response rates
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+# phibar = c(.2, .1, .05),
+# n_total = 5000)
+#
+# #Expanded example with more varying factors
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+#                           phibar_h = c(.2, .1, .05),
+#                           tau_h = c(1.1, 1.2, 1.3),
+#                           c_NR_h = 2:4,
+#                           n_total = 5e4)
+#
+# #Same as above but fix total costs
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+#                           phibar_h = c(.2, .1, .05),
+#                           tau_h = c(1.1, 1.2, 1.3),
+#                           c_NR_h = 2:4,
+#                           cost_total = 5e4)
+#
+# \dontrun{
+# #gives warning due to excessive n_h's
+# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
+#                           phibar_h = c(.2, .1, .05),
+#                           tau_h = c(1.1, 1.2, 1.3),
+#                           c_NR_h = 2:4,
+#                           cost_total = 5e6)
+# }
+#'@returns \code{opt_nh_nonresp_oneiter} returns sample allocation vector
+#'         \code{n_h}, computed from a single iteration given
+#'         the user-supplied \code{zeta_h}.
+#'
+#'@describeIn opt_nh_nonresp computes a single iteration of the
+#'            proposed allocation for user-supplied \code{zeta_h}
+#'            (used in place of the \eqn{\zeta_h(.)} term).
+#'@keywords allocation
+#'@export
+opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n"),
+                                   N_h,
+                                   phibar_h,
+                                   S_h = NULL,
+                                   n_total = NULL,
+                                   cost_total = NULL,
+                                   Var_target = NULL,
+                                   CV_target = NULL,
+                                   Ybar = NULL,
+                                   zeta_h = NULL,
+                                   c_NR_h = NULL,
+                                   tau_h = NULL,
+                                   strict_flag = TRUE,
+                                   verbose_flag = FALSE) {
+
+  #Check object lengths
+  H <- length(N_h)
+  if(length(N_h) != length(phibar_h)) stop("N_h and phibar_h are different lengths")
+
+  #User must specify exactly one quantity to fix
+  rlang::check_exclusive(n_total, cost_total, Var_target, CV_target)
+  if(!is.null(n_total) && length(n_total)!=1) stop("`n_total` must be a scalar.")
+  if(!is.null(cost_total) && length(cost_total)!=1) stop("`cost_total` must be a scalar.")
+  if(!is.null(Var_target) && length(Var_target)!=1) stop("`Var_target` must be a scalar.")
+  if(!is.null(CV_target) && length(CV_target)!=1) stop("`CV_target` must be a scalar.")
+  if(!is.null(Ybar) && length(Ybar)!=1) stop("`Ybar` must be a scalar.")
+
+  #If objective is provided, check for right args (and no extraneous args)
+  rlang::arg_match(objective)
+
+  #Make sure user specified exactly one quantity to fix
+  rlang::check_exclusive(n_total, cost_total, Var_target, CV_target)
+
+
+  #Infer objective from arguments
+  orig_objective <- objective
+  inferred_objective <- infer_objective(cost_total = cost_total, n_total = n_total, Var_target = Var_target, CV_target = CV_target,
+                                        c_NR_h = c_NR_h, tau_h = tau_h)
+  was_objective_supplied <- !missing(objective)
+  if(!was_objective_supplied) {
+    objective <- inferred_objective
+  }
+  #print(paste0("objective is ", objective))
+
+  if(objective == "min_var") {
+    is_var_fixed <- FALSE
+
+    objective_detailed <- validate_args_min_var(was_objective_supplied = was_objective_supplied,
+                                                n_total = n_total, cost_total = cost_total, c_NR_h = c_NR_h, tau_h = tau_h)
+
+    #if c_NR_h or tau_h are scalar, apply to all strata
+    if(length(c_NR_h)==1) c_NR_h <- rep(c_NR_h, H)
+    if(length(tau_h)==1) tau_h <- rep(tau_h, H)
+
+    #If minimizing the variance, S_h is assumed constant across strata by default
+    if(is.null(S_h)) S_h <- rep(1, H)
+  } else {
+    is_var_fixed <- TRUE
+
+    objective_detailed <- validate_args_fixed_var(was_objective_supplied = was_objective_supplied,
+                                                  objective = objective, S_h = S_h,
+                                                  Var_target = Var_target, CV_target = CV_target, Ybar = Ybar,
+                                                  c_NR_h = c_NR_h, tau_h = tau_h)
+  }
+
+  if(was_objective_supplied) testthat::expect_equal(objective, inferred_objective) #these should always match
+
+  #Check arg lengths
+  if(is.null(zeta_h)) zeta_h <- rep(1, H)
+  if(is.null(c_NR_h)) c_NR_h <- rep(1, H)
+  if(is.null(tau_h)) tau_h <- rep(1, H)
+  if(length(N_h) != length(S_h)) stop("N_h and S_h are different lengths")
+  if(length(N_h) != length(zeta_h)) stop("N_h and zeta_h are different lengths")
+  if(length(N_h) != length(c_NR_h)) stop("N_h and c_NR_h are different lengths")
+  if(length(N_h) != length(tau_h)) stop("N_h and tau_h are different lengths")
+
+  #Check for illogical arguments
+  if(any(phibar_h <= 0)) stop("invalid phibar_h (must be strictly positive)")
+  if(any(phibar_h > 1)) stop("invalid phibar_h (cannot exceed 1)")
+  if(any(S_h <= 0)) stop("invalid S_h (must be strictly positive)")
+  if(any(c_NR_h <= 0)) stop("invalid c_NR_h (must be strictly positive)")
+  if(any(tau_h <= 0)) stop("invalid tau_h (must be strictly positive)")
+
+  #Run variance target through validater
+  #  Ensures that variance target is strictly positive and finite
+  #  Sets either to Var_target (if provided) or CV_target^2*Ybar^2 (when applicable)
+  Var_target <- validate_var_target(Var_target = Var_target, CV_target = CV_target, Ybar = Ybar)
+
+  #Main calculations
+  if(objective == "min_var") {
+    nh_propto_num <- N_h * S_h * sqrt(zeta_h)
+    nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+    nh_propto <- nh_propto_num / nh_propto_denom
+
+    nh_one_invitee <- nh_propto / sum(nh_propto) #share of sample for strat h
+
+    if(!is.null(n_total)) {
+      n_h <- nh_one_invitee * n_total
+    } else {
+      exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
+      n_h <- nh_one_invitee * cost_total / exp_cost_per_invitee
+      C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h) #total expected costs
+    }
+  } else {
+    stopifnot(objective %in% c("min_n", "min_cost"))
+
+    W_h <- N_h / sum(N_h)
+    c_h <- c_NR_h * (phibar_h * (tau_h - 1) + 1) #E(cost/invitee) in stratum h
+
+    nh_propto <- (W_h * S_h * sqrt(zeta_h) / sqrt(phibar_h * c_h))
+    proportionality_const_num <- sum(W_h * S_h * sqrt(c_h * zeta_h / phibar_h))
+    proportionality_const_denom <- Var_target + sum(W_h * S_h^2 / sum(N_h))
+
+    n_h <- nh_propto * proportionality_const_num / proportionality_const_denom
+
+    C_h <- n_h * c_h #total expected costs in stratum
+    #return("precision constraint is not yet supported")
+  }
+
+  res <- n_h
+
+  if(!all(n_h <= N_h)) {
+    my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
+    if(strict_flag) {
+      stop(my_error_msg)
+    } else {
+      warning(my_error_msg)
+    }
+  }
+
+  if(verbose_flag) {
+    if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
+
+    results_tbl <- tibble::tibble(N_h = N_h,
+                                  S_h = S_h,
+                                  zeta_h = zeta_h,
+                                  c_NR_h = c_NR_h,
+                                  tau_h = tau_h,
+                                  phibar_h = phibar_h,
+                                  n_h = n_h,
+                                  C_h = C_h)
+    return(mget(ls()))
+  } else {
+    return(n_h)
+  }
+}
+#codetools::findGlobals(opt_nh_nonresp_oneiter)
+
 # Internal functions ====================
 
 ## Helper/validation functions ==============
@@ -610,218 +826,3 @@ calc_zeta_discrete <- function(n_h,
 }
 #codetools::findGlobals(calc_zeta_discrete)
 
-#'Calculates one iteration of proposed optimal allocation conditioned on some zeta
-#'
-#@description
-#\code{opt_nh_nonresp_oneiter()} computes one iteration of the proposed
-#allocation for some user-supplied \eqn{\zeta_h(.)}.
-#'
-#'@param objective (string; optional/recommended)
-#'Must be equal to "\code{min_var}", "\code{min_cost}", or "\code{min_n}".
-#'Indicates whether the goal of optimization is to minimize variance, expected cost, or invited sample size, respectively.
-#'@param N_h (vector) strata population counts (\eqn{N_h})
-#'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
-#'@param S_h (vector) strata population standard deviations (\eqn{S_h}); constant, by default;
-#'required when fixing precision (rather than costs or sample size)
-#'@param n_total (scalar) total invited sample size to allocate
-#'@param cost_total (scalar) total expected costs to allocate
-#'@param Var_target (scalar) fixed variance target
-#'@param CV_target (scalar) fixed CV target (requires use of \code{Ybar})
-#'@param Ybar (scalar) population mean (use only with \code{CV_target})
-#'@param zeta_h (vector; use with \code{opt_nh_nonresp_oneiter}, only;
-#'           optional) adjustment factor to reflect inflation in variances
-#'           from randomness in the number of respondents (default = 1)
-#'@param c_NR_h (vector) per-unit costs for nonrespondents in stratum h (use with \code{cost_total} or when optimizing costs)
-#'  (\eqn{c_{NR_h}})
-#'@param tau_h (vector) ratio of costs for respondents to
-#'  costs for nonrespondents in stratum h (\eqn{\tau_h})
-#'  (use with \code{cost_total} or when optimizing costs)
-#'@param strict_flag (boolean) whether to throw error (versus warning) if any
-#'  \eqn{n_h > N_h}
-#'@param verbose_flag (boolean) whether to provide detailed results
-#'
-#Old examples (not currently used):
-#
-# #Basic example with varying response rates
-# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-# phibar = c(.2, .1, .05),
-# n_total = 5000)
-#
-# #Expanded example with more varying factors
-# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-#                           phibar_h = c(.2, .1, .05),
-#                           tau_h = c(1.1, 1.2, 1.3),
-#                           c_NR_h = 2:4,
-#                           n_total = 5e4)
-#
-# #Same as above but fix total costs
-# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-#                           phibar_h = c(.2, .1, .05),
-#                           tau_h = c(1.1, 1.2, 1.3),
-#                           c_NR_h = 2:4,
-#                           cost_total = 5e4)
-#
-# \dontrun{
-# #gives warning due to excessive n_h's
-# opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
-#                           phibar_h = c(.2, .1, .05),
-#                           tau_h = c(1.1, 1.2, 1.3),
-#                           c_NR_h = 2:4,
-#                           cost_total = 5e6)
-# }
-#'@returns \code{opt_nh_nonresp_oneiter} returns sample allocation vector
-#'         \code{n_h}, computed from a single iteration given
-#'         the user-supplied \code{zeta_h}.
-#'
-#'@describeIn opt_nh_nonresp computes a single iteration of the
-#'            proposed allocation for user-supplied \code{zeta_h}
-#'            (used in place of the \eqn{\zeta_h(.)} term).
-#'@keywords allocation
-#'@export
-opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n"),
-                                   N_h,
-                                   phibar_h,
-                                   S_h = NULL,
-                                   n_total = NULL,
-                                   cost_total = NULL,
-                                   Var_target = NULL,
-                                   CV_target = NULL,
-                                   Ybar = NULL,
-                                   zeta_h = NULL,
-                                   c_NR_h = NULL,
-                                   tau_h = NULL,
-                                   strict_flag = TRUE,
-                                   verbose_flag = FALSE) {
-
-  #Check object lengths
-  H <- length(N_h)
-  if(length(N_h) != length(phibar_h)) stop("N_h and phibar_h are different lengths")
-
-  #User must specify exactly one quantity to fix
-  rlang::check_exclusive(n_total, cost_total, Var_target, CV_target)
-  if(!is.null(n_total) && length(n_total)!=1) stop("`n_total` must be a scalar.")
-  if(!is.null(cost_total) && length(cost_total)!=1) stop("`cost_total` must be a scalar.")
-  if(!is.null(Var_target) && length(Var_target)!=1) stop("`Var_target` must be a scalar.")
-  if(!is.null(CV_target) && length(CV_target)!=1) stop("`CV_target` must be a scalar.")
-  if(!is.null(Ybar) && length(Ybar)!=1) stop("`Ybar` must be a scalar.")
-
-  #If objective is provided, check for right args (and no extraneous args)
-  rlang::arg_match(objective)
-
-  #Make sure user specified exactly one quantity to fix
-  rlang::check_exclusive(n_total, cost_total, Var_target, CV_target)
-
-
-  #Infer objective from arguments
-  orig_objective <- objective
-  inferred_objective <- infer_objective(cost_total = cost_total, n_total = n_total, Var_target = Var_target, CV_target = CV_target,
-                                        c_NR_h = c_NR_h, tau_h = tau_h)
-  was_objective_supplied <- !missing(objective)
-  if(!was_objective_supplied) {
-    objective <- inferred_objective
-  }
-  #print(paste0("objective is ", objective))
-
-  if(objective == "min_var") {
-    is_var_fixed <- FALSE
-
-    objective_detailed <- validate_args_min_var(was_objective_supplied = was_objective_supplied,
-                                                n_total = n_total, cost_total = cost_total, c_NR_h = c_NR_h, tau_h = tau_h)
-
-    #if c_NR_h or tau_h are scalar, apply to all strata
-    if(length(c_NR_h)==1) c_NR_h <- rep(c_NR_h, H)
-    if(length(tau_h)==1) tau_h <- rep(tau_h, H)
-
-    #If minimizing the variance, S_h is assumed constant across strata by default
-    if(is.null(S_h)) S_h <- rep(1, H)
-  } else {
-    is_var_fixed <- TRUE
-
-    objective_detailed <- validate_args_fixed_var(was_objective_supplied = was_objective_supplied,
-                                                  objective = objective, S_h = S_h,
-                                                  Var_target = Var_target, CV_target = CV_target, Ybar = Ybar,
-                                                  c_NR_h = c_NR_h, tau_h = tau_h)
-    }
-
-  if(was_objective_supplied) testthat::expect_equal(objective, inferred_objective) #these should always match
-
-  #Check arg lengths
-  if(is.null(zeta_h)) zeta_h <- rep(1, H)
-  if(is.null(c_NR_h)) c_NR_h <- rep(1, H)
-  if(is.null(tau_h)) tau_h <- rep(1, H)
-  if(length(N_h) != length(S_h)) stop("N_h and S_h are different lengths")
-  if(length(N_h) != length(zeta_h)) stop("N_h and zeta_h are different lengths")
-  if(length(N_h) != length(c_NR_h)) stop("N_h and c_NR_h are different lengths")
-  if(length(N_h) != length(tau_h)) stop("N_h and tau_h are different lengths")
-
-  #Check for illogical arguments
-  if(any(phibar_h <= 0)) stop("invalid phibar_h (must be strictly positive)")
-  if(any(phibar_h > 1)) stop("invalid phibar_h (cannot exceed 1)")
-  if(any(S_h <= 0)) stop("invalid S_h (must be strictly positive)")
-  if(any(c_NR_h <= 0)) stop("invalid c_NR_h (must be strictly positive)")
-  if(any(tau_h <= 0)) stop("invalid tau_h (must be strictly positive)")
-
-  #Run variance target through validater
-  #  Ensures that variance target is strictly positive and finite
-  #  Sets either to Var_target (if provided) or CV_target^2*Ybar^2 (when applicable)
-  Var_target <- validate_var_target(Var_target = Var_target, CV_target = CV_target, Ybar = Ybar)
-
-  #Main calculations
-  if(objective == "min_var") {
-    nh_propto_num <- N_h * S_h * sqrt(zeta_h)
-    nh_propto_denom <- sqrt(phibar_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
-    nh_propto <- nh_propto_num / nh_propto_denom
-
-    nh_one_invitee <- nh_propto / sum(nh_propto) #share of sample for strat h
-
-    if(!is.null(n_total)) {
-      n_h <- nh_one_invitee * n_total
-    } else {
-      exp_cost_per_invitee <- sum(nh_one_invitee * c_NR_h * (phibar_h * tau_h + 1 - phibar_h))
-      n_h <- nh_one_invitee * cost_total / exp_cost_per_invitee
-      C_h <- n_h * c_NR_h * (phibar_h * tau_h + 1 - phibar_h) #total expected costs
-    }
-  } else {
-    stopifnot(objective %in% c("min_n", "min_cost"))
-
-    W_h <- N_h / sum(N_h)
-    c_h <- c_NR_h * (phibar_h * (tau_h - 1) + 1) #E(cost/invitee) in stratum h
-
-    nh_propto <- (W_h * S_h * sqrt(zeta_h) / sqrt(phibar_h * c_h))
-    proportionality_const_num <- sum(W_h * S_h * sqrt(c_h * zeta_h / phibar_h))
-    proportionality_const_denom <- Var_target + sum(W_h * S_h^2 / sum(N_h))
-
-    n_h <- nh_propto * proportionality_const_num / proportionality_const_denom
-
-    C_h <- n_h * c_h #total expected costs in stratum
-    #return("precision constraint is not yet supported")
-  }
-
-  res <- n_h
-
-  if(!all(n_h <= N_h)) {
-    my_error_msg <- "some n_h's exceed N_h's; try mathematical programming approach"
-    if(strict_flag) {
-      stop(my_error_msg)
-    } else {
-      warning(my_error_msg)
-    }
-  }
-
-  if(verbose_flag) {
-    if(!exists("C_h")) C_h <- NULL #allows verbose results even if costs not explicitly specified
-
-    results_tbl <- tibble::tibble(N_h = N_h,
-                                  S_h = S_h,
-                                  zeta_h = zeta_h,
-                                  c_NR_h = c_NR_h,
-                                  tau_h = tau_h,
-                                  phibar_h = phibar_h,
-                                  n_h = n_h,
-                                  C_h = C_h)
-    return(mget(ls()))
-  } else {
-    return(n_h)
-  }
-}
-#codetools::findGlobals(opt_nh_nonresp_oneiter)
