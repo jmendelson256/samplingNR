@@ -15,6 +15,7 @@
 - Add unit testing for fixed precision method.
 - Add unit testing and/or examples for `Var_ps_mean()` and `Var_ps_mean_opts()`?
 - Maybe add a brief section providing the formula for optimal allocation under fixed costs?
+- Proofread documentation of `Var_ps_mean()` and `Var_ps_mean_opts()`?
 
 # samplingNR 0.2.1
 

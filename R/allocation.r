@@ -20,6 +20,8 @@
 #'The cost structure assumes that respondents and nonrespondents in stratum \eqn{h}
 #'have per-unit costs of \eqn{c_{R_h}} and \eqn{c_{NR_h}}, respectively,
 #'with a ratio of \eqn{\tau_h = c_{R_h}/c_{NR_h}}.
+#'Optimization is with respect to the variance of the poststratified estimator
+#'of the finite population mean under nonresponse; see [Var_ps_mean()].
 #'
 #'\code{opt_nh_nonresp()} computes the exact allocation in an iterative fashion
 #' (see Details section); individual iterations are computed using
