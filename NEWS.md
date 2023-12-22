@@ -9,10 +9,11 @@
 - Took vignette example, calculated variance, then set that as precision target (both ways); same result. Looked over in Excel somewhat.
 - Under complete response, can replicate PracTools vignette example.
 - Under nonresponse, changes allocation in expected way.
+- Added `Var_ps_mean()` and `Var_ps_mean_opts()` for computing variance of the poststratified mean.
 * Outstanding items.
 - Re-read documentation -- still correct?
 - Add unit testing for fixed precision method.
-- Add fn to calculate variance for finite pop mean. Take a look at jmpaper3::calc_EVar_under_nonresp() but may want to remove some of the options that won't be commonly used to avoid user confusion.
+- Add unit testing and/or examples for `Var_ps_mean()` and `Var_ps_mean_opts()`?
 - Maybe add a brief section providing the formula for optimal allocation under fixed costs?
 
 # samplingNR 0.2.1

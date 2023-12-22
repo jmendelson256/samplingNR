@@ -1,5 +1,7 @@
 # Exported functions ====================
 
+## Allocation =========================
+
 #'Calculate optimal allocation under anticipated nonresponse
 #'
 #'@description
@@ -430,6 +432,8 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 }
 #codetools::findGlobals(opt_nh_nonresp_oneiter)
 
+## Truncated binom distribution =========================
+
 #'Compute variance inflation factor from uncertainty in responding sample size
 #' (with smoothing for continuous \eqn{n_h})
 #'
@@ -534,6 +538,160 @@ calc_zeta <- function(n_h,
 }
 #codetools::findGlobals(calc_zeta)
 
+## Inferences =========================
+
+#'Variance of poststratified estimator of the finite population mean under nonresponse
+#'
+#'@description
+#'Calculates the variance of the poststratified estimator of the finite
+#'population mean under nonresponse (for stratified random samples),
+#'as defined in our paper.
+#'The variance is analogous to the classic design-based expression
+#'under complete response, except that it reflects not only the
+#'expected sample loss but also the uncertainty in the responding sample size.
+#'Nonresponse is treated as an additional sampling phase wherein
+#'units' response probabilities are assumed known, independent,
+#'and constant within strata,
+#'and where we further assume at least one respondent in each stratum.
+#'
+#'@details
+#'Assuming stratified random sampling,
+#'define the poststratified estimator of the finite population mean
+#'under nonresponse as
+#'\deqn{
+#'\hat{\bar{Y}} = \sum_{h=1}^H \frac{N_h}{N} \bar{y}_h,
+#'}
+#'where \eqn{N_h} and \eqn{\bar{y}_h} denote the stratum \eqn{h}
+#'population size and (responding) sample mean, respectively,
+#'for \eqn{h = 1, 2, ..., H}, and where \eqn{N = \sum_{h=1}^H N_h} is the
+#'total population size.
+#'
+#'Our paper treats nonresponse via a quasi-randomization framework
+#'(Oh and Scheuren, 1983), wherein nonresponse is treated as an additional
+#'sampling phase, and where the response status of distinct sample units
+#'is assumed to be independent.
+#'Assuming an invited sample size of \eqn{n_h} with constant response
+#'propensities of \eqn{\bar{\phi}_h} within strata \eqn{h},
+#'and further assuming at least one respondent per stratum,
+#'the variance (with respect to both the sample design and the
+#'nonresponse model) is
+#'\deqn{ \mathrm{Var}\left(\hat{\bar{Y}}\right) =
+#'\sum_{h=1}^H \left(
+#'  \frac{N_h^2 S_h^2 \zeta_h (n_h, \bar{\phi}_h)}{N^2 n_h \bar{\phi}_h} -
+#'  \frac{N_h S_h^2}{N^2}
+#'\right),}
+#'where \eqn{S_h} is the stratum \eqn{h} unit standard deviation and
+#'\eqn{\zeta_h(.)} is a variance inflation term that captures variability
+#'in the number of respondents (see [calc_zeta()]).
+#'
+#'@param n_h (vector) strata sample sizes before nonresponse (\eqn{n_h})
+#'@param N_h (vector) strata population counts (\eqn{N_h})
+#'@param S_h (vector) strata population standard deviations
+#'@param phibar_h (vector) strata response propensities (\eqn{\bar{\phi}_h})
+#'@param opts (optional) options provided via [Var_ps_mean_opts()],
+#' mainly intended to facilitate comparison with other estimators
+#'
+#'@references
+#'Oh, H. L. and Scheuren, F. J. (1983). Weighting adjustment for unit
+#'nonresponse. In Madow, W., Olkin, I., and Rubin, D., editors,
+#'\emph{Incomplete Data in Sample Surveys, Vol. 2: Theory and Bibliographies},
+#'pages 143–184. New York: Academic Press.
+#'
+#'@examples
+#' Var_ps_mean(n_h = c(100, 200, 500),
+#'             N_h = c(1000, 1500, 2000),
+#'             S_h = c(1.1, 1, 0.9),
+#'             phibar_h = c(.3, .25, .2))
+#'
+#'@keywords inferences
+#'@export
+Var_ps_mean <- function(n_h,
+                        N_h,
+                        S_h,
+                        phibar_h,
+                        opts = Var_ps_mean_opts()) {
+  if(!inherits(opts, "Var_ps_mean_opts")) {
+    cli::cli_abort("{.arg opts} must be created by {.fun Var_ps_mean_opts}.")
+  }
+
+  stopifnot(length(n_h) == length(N_h))
+  stopifnot(length(n_h) == length(S_h))
+  stopifnot(length(n_h) == length(phibar_h))
+
+  if(opts$use_zetas) {
+    zeta_h <- calc_zeta(n_h = n_h,
+                        phibar_h = phibar_h,
+                        rh_min = opts$zeta_rh_min)
+  } else {
+    zeta_h <- 1
+  }
+
+  N_tot <- sum(N_h)
+
+  var_main_component <- (N_h^2 * S_h^2 * zeta_h /
+                           (N_tot^2 * n_h * phibar_h))
+  var_fpc_component <- -N_h * S_h^2 / N_tot^2
+  if(opts$ignore_fpc) {
+    var_fpc_component <- 0
+  }
+
+  var_h <- var_main_component + var_fpc_component
+
+  res <- sum(var_h)
+
+  if(opts$verbose_flag) {
+    return(list(res = res,
+                var_h = var_h,
+                var_main_component = var_main_component,
+                var_fpc_component = var_fpc_component,
+                zeta_h = zeta_h,
+                exp_r_h = n_h * phibar_h))
+  } else {
+    (res)
+  }
+}
+#codetools::findGlobals(Var_ps_mean)
+
+#Var_ps_mean
+
+#'Sets options for \code{Var_ps_mean()}
+#'
+#'Sets options for [Var_ps_mean()].
+#'These options are mainly intended to facilitate exploration and comparisons
+#'with other estimators, rather than for use in practice.
+#'In particular, users are cautioned that changing
+#'the defaults for \code{use_zeta} and/or \code{ignore_fpc} result in
+#'variances that are only approximate.
+#'
+#'@param zeta_rh_min (scalar) minimum target respondents per stratum (\eqn{r_h^{LB}}),
+#'  as used by [calc_zeta()]; default is 3.5.
+#'@param use_zetas (boolean; default = \code{TRUE}) if disabled, the variance
+#'  will be approximated under the assumption that
+#'   \eqn{\zeta_h(n_h, \bar{\phi}_h) = \mathrm{E}(r_h)\mathrm{E}(1/r_h) \overset{.}{=}1},
+#'  meaning that the variance will be conditioned on the responding sample size
+#'@param ignore_fpc (boolean; default = \code{FALSE}) if enabled,
+#'  the variance calculation will ignore the reduction in variance
+#'  that arises from interviewing part of a finite population
+#'@param verbose_flag (boolean) whether to provide detailed results
+#'  (e.g., to allow for examining different components of the variance expression)
+#'
+#'@returns a list with components \code{use_zetas}, \code{zeta_rh_min}, \code{ignore_fpc}, \code{verbose_flag},
+#'as explained under 'Arguments'.
+#'
+#'@keywords inferences
+#'@export
+Var_ps_mean_opts <- function(zeta_rh_min = 3.5,
+                             use_zetas = TRUE,
+                             ignore_fpc = FALSE,
+                             verbose_flag = FALSE) {
+  structure(
+    list(zeta_rh_min = zeta_rh_min,
+         use_zetas = use_zetas,
+         ignore_fpc = ignore_fpc,
+         verbose_flag = verbose_flag),
+    class = "Var_ps_mean_opts"
+  )
+}
 
 # Internal functions ====================
 
