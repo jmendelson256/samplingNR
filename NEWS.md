@@ -2,7 +2,7 @@
 
 * Use cc0 licensing
 * In `opt_nh_nonresp`, moved ... to be before optional args
-
+* First intended public release
 
 # samplingNR 0.2.1
 
