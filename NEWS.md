@@ -1,6 +1,7 @@
-# samplingNR 0.2.9000 - dev
+# samplingNR 0.2.2
 
-* In `opt_nh_nonresp`, move ... to be before optional args
+* Use cc0 licensing
+* In `opt_nh_nonresp`, moved ... to be before optional args
 
 
 # samplingNR 0.2.1

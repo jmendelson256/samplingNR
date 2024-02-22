@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 You can install `samplingNR` by using a command such as:
 
 ```{r, eval = FALSE}
-install.packages("samplingNR_0.2.1.tar.gz")
+install.packages("samplingNR_0.2.2.tar.gz")
 ```
 
 ## Vignette

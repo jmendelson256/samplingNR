@@ -11,7 +11,7 @@ allocations under anticipated nonresponse, as described in our paper.
 You can install `samplingNR` by using a command such as:
 
 ``` r
-install.packages("samplingNR_0.2.1.tar.gz")
+install.packages("samplingNR_0.2.2.tar.gz")
 ```
 
 ## Vignette

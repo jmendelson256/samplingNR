@@ -1,13 +1,13 @@
 Package: samplingNR
 Type: Package
 Title: Stratified sample allocation under anticipated nonresponse
-Version: 0.2.1.9000
+Version: 0.2.2
 Authors@R: person("Jonathan", "Mendelson", email = "jmendelson@gmail.com", role=c("aut", "cre"),
                   comment = c(ORCID = "0000-0001-5575-8773"))
 Author: Jonathan Mendelson [aut, cre] (<https://orcid.org/0000-0001-5575-8773>)
 Maintainer: Jonathan Mendelson <jmendelson@gmail.com>
 Description: Computes stratified sample allocations in a manner that accounts for anticipated nonresponse.
-License: MIT + file LICENSE
+License: CC0
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/jmendelson256/samplingNR
