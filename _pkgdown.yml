@@ -1,6 +1,11 @@
 url: https://jmendelson256.github.io/samplingNR/
+
+development:
+  mode: auto
+
 template:
   bootstrap: 5
+
 reference:
 - title: "Allocate sample"
   desc: Sample allocation functions
