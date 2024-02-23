@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 
 The example below shows how to use the `samplingNR` package to allocate a sample of 50,000 invitees, using methods described in our paper when assuming equivalent strata variances across strata (i.e., $S_h = S$ for some constant $S$). The example shows how to replicate our paper's Table 2, which compares the proposed allocation with common alternatives in an application to a survey of military personnel.
 
-The stratification, population counts, and response rate information used in this example are included in our package as the data set `pevs_adm_2016_rrs`, structured as a [tibble](https://tibble.tidyverse.org/).  These data are based on secondary analysis of public use data for the 2016 Post-Election Voting Survey of Active Duty Military (PEVS-ADM; Federal Assistance Voting Program, 2017a, 2017b), as described in our paper.
+The stratification, population counts, and response rate information used in this example are included in our package as the data set `pevs_adm_2016_rrs`, structured as a [tibble](https://tibble.tidyverse.org/). These data are based on secondary analysis of public use data for the 2016 Post-Election Voting Survey of Active Duty Military (PEVS-ADM; Federal Assistance Voting Program, 2017a, 2017b), as described in our paper.
 
 ## Compute allocations
 
@@ -151,8 +151,8 @@ eff_resp_vec[4]/eff_resp_vec[1:2] - 1
 
 ## References
 
-Federal Voting Assistance Program. (2017a). 2015-2016 Active Duty Military dataset. Federal Voting Assistance Program, U.S. Department of Defense. <https://www.fvap.gov/uploads/FVAP/Surveys/PEV51601_Pub.dta> [Accessed 17 January 2023].
+Federal Voting Assistance Program. (2017a). 2015-2016 Active Duty Military dataset. Federal Voting Assistance Program, U.S. Department of Defense.
 
-Federal Voting Assistance Program (2017b). Post-Election Voting Surveys: Active Duty Military: Technical report 2016. Technical report, Federal Voting Assistance Program, U.S. Department of Defense. <https://www.fvap.gov/uploads/FVAP/Reports/PEVS_ADM_TechReport_Final.pdf> [Accessed 17 January 2023].
+Federal Voting Assistance Program (2017b). Post-Election Voting Surveys: Active Duty Military: Technical report 2016. Technical report, Federal Voting Assistance Program, U.S. Department of Defense.
 
 Kish, L. (1992). Weighting for unequal Pi. *Journal of Official Statistics*, *8*(2), 183--200.

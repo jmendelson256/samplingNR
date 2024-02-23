@@ -58,13 +58,10 @@ screener-based eligibility criteria.
 \references{
 Federal Voting Assistance Program. (2017a). 2015-2016 Active Duty Military dataset.
 Federal Voting Assistance Program, U.S. Department of Defense.
-\url{https://www.fvap.gov/uploads/FVAP/Surveys/PEV51601_Pub.dta} [Accessed 17 January 2023].
 
 Federal Voting Assistance Program (2017b). Post-Election Voting Surveys:
 Active Duty Military: Technical report 2016.
 Technical report, Federal Voting Assistance Program,
 U.S. Department of Defense.
-\url{https://www.fvap.gov/uploads/FVAP/Reports/PEVS_ADM_TechReport_Final.pdf}
-[Accessed 17 January 2023].
 }
 \keyword{data}

@@ -18,6 +18,7 @@ the help page for \code{\link[=opt_nh_nonresp]{opt_nh_nonresp()}}.
 Useful links:
 \itemize{
   \item \url{https://github.com/jmendelson256/samplingNR}
+  \item \url{https://jmendelson256.github.io/samplingNR/}
   \item Report bugs at \url{https://github.com/jmendelson256/samplingNR/issues}
 }
 
