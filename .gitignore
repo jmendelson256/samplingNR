@@ -5,7 +5,6 @@
 #Temporary folders
 /dev/*
 #Output from elsewhere
-/man/*
 vignettes/*.html
 vignettes/*.pdf
 #Output from R CMD build
