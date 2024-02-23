@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">samplingNR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -101,7 +101,7 @@ Program, 2017a, 2017b), as described in our paper.</p>
 <div class="section level3">
 <h3 id="exact-optimal-allocation-iterative">Exact optimal allocation (iterative)<a class="anchor" aria-label="anchor" href="#exact-optimal-allocation-iterative"></a>
 </h3>
-<p>The function <code>opt_nh_nonresp()</code> calculates the exact
+<p>The function <code><a href="../reference/opt_nh_nonresp.html">opt_nh_nonresp()</a></code> calculates the exact
 (i.e., iteratively computed) version of the optimal allocation under
 nonresponse, as provided in our paper and summarized in the function
 documentation. We assume that stratification follows that of
@@ -120,12 +120,12 @@ across strata and do not vary by response status).</p>
 <span></span>
 <span><span class="co">#Compute exact optimum allocation for PEVS-ADM 2016 data set for n = 50k</span></span>
 <span><span class="co">#Assumes tau = 1 by default</span></span>
-<span><span class="va">pevs_optE_alloc_50k</span> <span class="op">&lt;-</span> <span class="fu">opt_nh_nonresp</span><span class="op">(</span>N_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">Nhat_h</span>,</span>
+<span><span class="va">pevs_optE_alloc_50k</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_nh_nonresp.html">opt_nh_nonresp</a></span><span class="op">(</span>N_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">Nhat_h</span>,</span>
 <span>                                      phibar_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">rr_h</span>,</span>
 <span>                                      n_max <span class="op">=</span> <span class="fl">50000</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#Merge results into original data frame</span></span>
-<span><span class="va">pevs_adm_alloc_50k_merged</span> <span class="op">&lt;-</span> <span class="va">pevs_adm_2016_rrs</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">pevs_adm_alloc_50k_merged</span> <span class="op">&lt;-</span> <span class="va">pevs_adm_2016_rrs</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>n_h_optE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">pevs_optE_alloc_50k</span><span class="op">)</span>,</span>
 <span>                zeta_h_optE <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/attr.html" class="external-link">attr</a></span><span class="op">(</span><span class="va">pevs_optE_alloc_50k</span>,<span class="st">"zeta_h_prev"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -150,9 +150,9 @@ across strata and do not vary by response status).</p>
 <h3 id="approximately-optimal-allocation">Approximately optimal allocation<a class="anchor" aria-label="anchor" href="#approximately-optimal-allocation"></a>
 </h3>
 <p>The approximate version of this allocation, which assumes that <span class="math inline">\(\zeta_h(n_h,\bar{\phi}_h) = 1\)</span>, can be
-computed using the function <code>opt_nh_nonresp_oneiter()</code>.</p>
+computed using the function <code><a href="../reference/opt_nh_nonresp.html">opt_nh_nonresp_oneiter()</a></code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pevs_optA_alloc_50k</span> <span class="op">&lt;-</span> <span class="fu">opt_nh_nonresp_oneiter</span><span class="op">(</span>N_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">Nhat_h</span>,</span>
+<code class="sourceCode R"><span><span class="va">pevs_optA_alloc_50k</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_nh_nonresp.html">opt_nh_nonresp_oneiter</a></span><span class="op">(</span>N_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">Nhat_h</span>,</span>
 <span>                                              phibar_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">rr_h</span>,</span>
 <span>                                              n_max <span class="op">=</span> <span class="fl">50000</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -187,10 +187,10 @@ equivalent strata variances.</p>
 paper’s Appendix.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="op">(</span><span class="va">pevs_adm_allocs_50k</span> <span class="op">&lt;-</span> </span>
-<span>  <span class="va">pevs_adm_alloc_50k_merged</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="va">pevs_adm_alloc_50k_merged</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>n_h_optA <span class="op">=</span> <span class="va">pevs_optA_alloc_50k</span>,</span>
 <span>         n_h_Ninv <span class="op">=</span> <span class="va">nh_Ninv</span>,</span>
-<span>         n_h_Nresp <span class="op">=</span> <span class="va">nh_Nresp</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>         n_h_Nresp <span class="op">=</span> <span class="va">nh_Nresp</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"h"</span>, <span class="st">"n_h_Ninv"</span>, <span class="st">"n_h_Nresp"</span>, <span class="st">"n_h_optA"</span>, <span class="st">"n_h_optE"</span>, <span class="st">"zeta_h_optE"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 91 × 6</span></span></span>
 <span><span class="co">#&gt;    h     n_h_Ninv n_h_Nresp n_h_optA n_h_optE zeta_h_optE</span></span>
@@ -254,8 +254,8 @@ Neyman-style allocations.</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pevs_adm_alloc_summary_list</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pevs_adm_allocs_50k</span><span class="op">[</span>,<span class="fl">2</span><span class="op">:</span><span class="fl">5</span><span class="op">]</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">pevs_adm_alloc_summary_table</span> <span class="op">&lt;-</span> <span class="va">pevs_adm_alloc_summary_list</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span><span class="va">pevs_adm_alloc_summary_table</span> <span class="op">&lt;-</span> <span class="va">pevs_adm_alloc_summary_list</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/t.html" class="external-link">t</a></span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">pevs_adm_alloc_summary_table</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n_total"</span>, <span class="st">"r_total"</span>, <span class="st">"rr"</span>, </span>
