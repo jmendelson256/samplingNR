@@ -10,7 +10,7 @@ Description: Computes stratified sample allocations in a manner that accounts fo
 License: CC0
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/jmendelson256/samplingNR
+URL: https://github.com/jmendelson256/samplingNR, https://jmendelson256.github.io/samplingNR/
 BugReports: https://github.com/jmendelson256/samplingNR/issues
 Suggests: 
     knitr,
