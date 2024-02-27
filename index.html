@@ -66,6 +66,8 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="samplingnr">samplingNR<a class="anchor" aria-label="anchor" href="#samplingnr"></a>
 </h1></div>
+<!-- badges: start -->
+
 <p><code>samplingNR</code> is an R package that allows for computing optimal allocations under anticipated nonresponse, as described in our paper.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -87,28 +89,28 @@
 <h3 id="fixed-total-sample-size">Fixed total sample size<a class="anchor" aria-label="anchor" href="#fixed-total-sample-size"></a>
 </h3>
 <p>If the aim is to allocate a fixed total (invited) sample size, the basic usage is:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">opt_nh_nonresp</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  N_h,</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  phibar_h,</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">S_h =</span> <span class="cn">NULL</span>,</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  n_max</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">opt_nh_nonresp</span>(</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  N_h,</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  phibar_h,</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">S_h =</span> <span class="cn">NULL</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  n_max</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  ...</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>)</span></code></pre></div>
 <p>where vectors <code>N_h</code> and <code>phibar_h</code>denote the strata population sizes, anticipated response rates, and (optionally) strata variances, respectively, and where scalar <code>n_max</code> denotes the total sample size. If <code>S_h</code> is omitted, strata variances are assumed constant across strata.</p>
 </div>
 <div class="section level3">
 <h3 id="fixed-total-costs">Fixed total costs<a class="anchor" aria-label="anchor" href="#fixed-total-costs"></a>
 </h3>
 <p>If the aim is to allocate sample subject to a constraint on total costs, the basic usage is:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">opt_nh_nonresp</span>(</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  N_h,</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  phibar_h,</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">S_h =</span> <span class="cn">NULL</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  c_max,</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  c_NR_h,</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  tau_h</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  ...</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">opt_nh_nonresp</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  N_h,</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  phibar_h,</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">S_h =</span> <span class="cn">NULL</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  c_max,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  c_NR_h,</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  tau_h</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  ...</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>)</span></code></pre></div>
 <p>Here, <code>c_max</code> denotes the total allowable costs, <code>c_NR_h</code> denotes the unit costs per nonrespondent (by strata), and <code>tau_h</code> denotes the ratio of the unit costs per respondent to those of nonrespondents (by strata). The arguments <code>c_NR_h</code> and <code>tau_h</code> can be specified as vectors of dimension <code>H</code> if these quantities vary by strata; alternatively, if assumed constant across strata, they can be specified as scalars.</p>
 </div>
 </div>
