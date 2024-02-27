@@ -3,6 +3,11 @@
 
 # samplingNR
 
+<!-- badges: start -->
+
+[![R-CMD-check](https://github.com/jmendelson256/samplingNR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jmendelson256/samplingNR/actions/workflows/R-CMD-check.yaml)
+<!-- badges: end -->
+
 `samplingNR` is an R package that allows for computing optimal
 allocations under anticipated nonresponse, as described in our paper.
 
