@@ -19,7 +19,7 @@ You can install the latest development version of `samplingNR` from
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("jmendelson256/samplingNR")
+devtools::install_github("jmendelson256/samplingNR", build_vignettes = TRUE)
 ```
 
 ## Vignette
