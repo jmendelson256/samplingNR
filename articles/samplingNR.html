@@ -26,7 +26,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">samplingNR</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.3</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,12 +82,10 @@
 </h2>
 <p>The example below shows how to use the <code>samplingNR</code>
 package to allocate a sample of 50,000 invitees, using methods described
-in our paper when assuming equivalent strata variances across strata
-(i.e., <span class="math inline">\(S_h = S\)</span> for some constant
-<span class="math inline">\(S\)</span>). The example shows how to
-replicate our paper’s Table 2, which compares the proposed allocation
-with common alternatives in an application to a survey of military
-personnel.</p>
+in our paper (Mendelson &amp; Elliott, in press) when assuming
+equivalent strata variances across strata (i.e., <span class="math inline">\(S_h = S\)</span> for some constant <span class="math inline">\(S\)</span>). The example shows how to replicate
+our paper’s Table 2, which compares the proposed allocation with common
+alternatives in an application to a survey of military personnel.</p>
 <p>The stratification, population counts, and response rate information
 used in this example are included in our package as the data set
 <code>pevs_adm_2016_rrs</code>, structured as a <a href="https://tibble.tidyverse.org/" class="external-link">tibble</a>. These data are based on
@@ -109,7 +107,7 @@ documentation. We assume that stratification follows that of
 <code>N_h</code> and anticipated response propensities
 <code>phibar_h</code>. We have omitted the optional argument
 <code>S_h</code>, leading to use of the default assumption that <span class="math inline">\(S_h\)</span> is constant across strata. Note that
-by fixing the total number of invitees (<code>n_max</code>), we are
+by fixing the total number of invitees (<code>n_total</code>), we are
 implicitly assuming use of the <em>constant cost per invitee</em>
 scenario from our paper (i.e., per unit costs are assumed constant
 across strata and do not vary by response status).</p>
@@ -122,7 +120,7 @@ across strata and do not vary by response status).</p>
 <span><span class="co">#Assumes tau = 1 by default</span></span>
 <span><span class="va">pevs_optE_alloc_50k</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_nh_nonresp.html">opt_nh_nonresp</a></span><span class="op">(</span>N_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">Nhat_h</span>,</span>
 <span>                                      phibar_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">rr_h</span>,</span>
-<span>                                      n_max <span class="op">=</span> <span class="fl">50000</span><span class="op">)</span></span>
+<span>                                      n_total <span class="op">=</span> <span class="fl">50000</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#Merge results into original data frame</span></span>
 <span><span class="va">pevs_adm_alloc_50k_merged</span> <span class="op">&lt;-</span> <span class="va">pevs_adm_2016_rrs</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
@@ -154,7 +152,7 @@ computed using the function <code><a href="../reference/opt_nh_nonresp.html">opt
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pevs_optA_alloc_50k</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/opt_nh_nonresp.html">opt_nh_nonresp_oneiter</a></span><span class="op">(</span>N_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">Nhat_h</span>,</span>
 <span>                                              phibar_h <span class="op">=</span> <span class="va">pevs_adm_2016_rrs</span><span class="op">$</span><span class="va">rr_h</span>,</span>
-<span>                                              n_max <span class="op">=</span> <span class="fl">50000</span><span class="op">)</span></span></code></pre></div>
+<span>                                              n_total <span class="op">=</span> <span class="fl">50000</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="neyman-style-allocations-for-comparison">Neyman-style allocations for comparison<a class="anchor" aria-label="anchor" href="#neyman-style-allocations-for-comparison"></a>
@@ -293,6 +291,9 @@ Surveys: Active Duty Military: Technical report 2016. Technical report,
 Federal Voting Assistance Program, U.S. Department of Defense.</p>
 <p>Kish, L. (1992). Weighting for unequal Pi. <em>Journal of Official
 Statistics</em>, <em>8</em>(2), 183–200.</p>
+<p>Mendelson, J., &amp; Elliott, M. R. (in press). Optimal allocation
+under anticipated nonresponse. <em>Journal of Survey Statistics and
+Methodology</em>.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
     </nav></aside>
