@@ -24,7 +24,7 @@ where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h
 \description{
 Computes
 \eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
-as defined in the paper.
+as defined in our paper (Mendelson & Elliott, in press) see \emph{Details} for a summary.
 If there are any strata where the allocation may lead to
 \eqn{\mathrm{E}(r_h) < r_h^{LB}} for user-specified \eqn{r_h^{LB}}
 (3.5 by default), then \eqn{\zeta_h(.)} is evaluated
@@ -34,10 +34,10 @@ in place of \eqn{n_h}.
 Further, \eqn{\zeta_h(.)} is computed for continuous \eqn{n_h}
 as a weighted average
 of evaluations at \eqn{\lfloor n_h \rfloor} and
-\eqn{\lfloor n_h \rfloor + 1}, as in the paper.
+\eqn{\lfloor n_h \rfloor + 1}, as in our paper.
 }
 \details{
-In our paper, we assumed that the number of respondents in stratum \eqn{h}
+In Mendelson & Elliott (in press), we assumed that the number of respondents in stratum \eqn{h}
 can be modeled as standard binomial with support for zero removed
 (i.e., zero-truncated binomial; see \code{\link[=dtruncbinom]{dtruncbinom()}}),
 written as \eqn{r_h \sim TBinom(n_h, \bar{\phi}_h)}, where
@@ -78,5 +78,9 @@ where \eqn{w_h= \left(\lfloor n_h \rfloor + 1\right) - n_h}.
 #Note that n_h is adjusted in strata 1 and 4 since n_h * phibar_h < 3.5
 calc_zeta(n_h = c(100, 200, 300, 300),
          phibar_h = c(.03, .02, .05, .005))
+}
+\references{
+Mendelson, J., & Elliott, M. R. (in press).
+\emph{Journal of Survey Statistics and Methodology}.
 }
 \keyword{distributions}

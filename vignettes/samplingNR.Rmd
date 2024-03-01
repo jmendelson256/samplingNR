@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-The example below shows how to use the `samplingNR` package to allocate a sample of 50,000 invitees, using methods described in our paper when assuming equivalent strata variances across strata (i.e., $S_h = S$ for some constant $S$). The example shows how to replicate our paper's Table 2, which compares the proposed allocation with common alternatives in an application to a survey of military personnel.
+The example below shows how to use the `samplingNR` package to allocate a sample of 50,000 invitees, using methods described in our paper (Mendelson & Elliott, in press) when assuming equivalent strata variances across strata (i.e., $S_h = S$ for some constant $S$). The example shows how to replicate our paper's Table 2, which compares the proposed allocation with common alternatives in an application to a survey of military personnel.
 
 The stratification, population counts, and response rate information used in this example are included in our package as the data set `pevs_adm_2016_rrs`, structured as a [tibble](https://tibble.tidyverse.org/). These data are based on secondary analysis of public use data for the 2016 Post-Election Voting Survey of Active Duty Military (PEVS-ADM; Federal Assistance Voting Program, 2017a, 2017b), as described in our paper.
 
@@ -26,7 +26,7 @@ The stratification, population counts, and response rate information used in thi
 
 ### Exact optimal allocation (iterative)
 
-The function `opt_nh_nonresp()` calculates the exact (i.e., iteratively computed) version of the optimal allocation under nonresponse, as provided in our paper and summarized in the function documentation. We assume that stratification follows that of `pevs_adm_2016_rrs`, and specify the strata population sizes `N_h` and anticipated response propensities `phibar_h`. We have omitted the optional argument `S_h`, leading to use of the default assumption that $S_h$ is constant across strata. Note that by fixing the total number of invitees (`n_max`), we are implicitly assuming use of the *constant cost per invitee* scenario from our paper (i.e., per unit costs are assumed constant across strata and do not vary by response status).
+The function `opt_nh_nonresp()` calculates the exact (i.e., iteratively computed) version of the optimal allocation under nonresponse, as provided in our paper and summarized in the function documentation. We assume that stratification follows that of `pevs_adm_2016_rrs`, and specify the strata population sizes `N_h` and anticipated response propensities `phibar_h`. We have omitted the optional argument `S_h`, leading to use of the default assumption that $S_h$ is constant across strata. Note that by fixing the total number of invitees (`n_total`), we are implicitly assuming use of the *constant cost per invitee* scenario from our paper (i.e., per unit costs are assumed constant across strata and do not vary by response status).
 
 ```{r example}
 library(samplingNR)
@@ -37,7 +37,7 @@ library(dplyr)
 #Assumes tau = 1 by default
 pevs_optE_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
                                       phibar_h = pevs_adm_2016_rrs$rr_h,
-                                      n_max = 50000)
+                                      n_total = 50000)
 
 #Merge results into original data frame
 pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs %>%
@@ -55,7 +55,7 @@ The approximate version of this allocation, which assumes that $\zeta_h(n_h,\bar
 ```{r}
 pevs_optA_alloc_50k <- opt_nh_nonresp_oneiter(N_h = pevs_adm_2016_rrs$Nhat_h,
                                               phibar_h = pevs_adm_2016_rrs$rr_h,
-                                              n_max = 50000)
+                                              n_total = 50000)
 ```
 
 ### Neyman-style allocations for comparison
@@ -156,3 +156,5 @@ Federal Voting Assistance Program. (2017a). 2015-2016 Active Duty Military datas
 Federal Voting Assistance Program (2017b). Post-Election Voting Surveys: Active Duty Military: Technical report 2016. Technical report, Federal Voting Assistance Program, U.S. Department of Defense.
 
 Kish, L. (1992). Weighting for unequal Pi. *Journal of Official Statistics*, *8*(2), 183--200.
+
+Mendelson, J., & Elliott, M. R. (in press). Optimal allocation under anticipated nonresponse. *Journal of Survey Statistics and Methodology*.
