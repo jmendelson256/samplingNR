@@ -42,14 +42,15 @@ usage is:
       N_h,
       phibar_h,
       S_h = NULL,
-      n_max
+      n_total,
       ...
     )
 
 where vectors `N_h` and `phibar_h`denote the strata population sizes,
 anticipated response rates, and (optionally) strata variances,
-respectively, and where scalar `n_max` denotes the total sample size. If
-`S_h` is omitted, strata variances are assumed constant across strata.
+respectively, and where scalar `n_total` denotes the total sample size.
+If `S_h` is omitted, strata variances are assumed constant across
+strata.
 
 ### Fixed total costs
 
@@ -60,15 +61,15 @@ the basic usage is:
       N_h,
       phibar_h,
       S_h = NULL,
-      c_max,
+      cost_total,
       c_NR_h,
-      tau_h
+      tau_h,
       ...
     )
 
-Here, `c_max` denotes the total allowable costs, `c_NR_h` denotes the
-unit costs per nonrespondent (by strata), and `tau_h` denotes the ratio
-of the unit costs per respondent to those of nonrespondents (by strata).
-The arguments `c_NR_h` and `tau_h` can be specified as vectors of
-dimension `H` if these quantities vary by strata; alternatively, if
+Here, `cost_total` denotes the total allowable costs, `c_NR_h` denotes
+the unit costs per nonrespondent (by strata), and `tau_h` denotes the
+ratio of the unit costs per respondent to those of nonrespondents (by
+strata). The arguments `c_NR_h` and `tau_h` can be specified as vectors
+of dimension `H` if these quantities vary by strata; alternatively, if
 assumed constant across strata, they can be specified as scalars.

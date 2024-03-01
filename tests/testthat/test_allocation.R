@@ -53,36 +53,36 @@ test_that("calc_zeta verbose flag works", {
 
 test_that("opt_nh_nonresp_oneiter correctly validates arguments", {
 
-  #n_max or c_max need to be provided
+  #n_total or cost_total need to be provided
   expect_error(opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                       phibar_h = c(.2, .1, .05)))
 
-  #can't provide both n_max and c_max
+  #can't provide both n_total and cost_total
   expect_error(opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                       phibar_h = c(.2, .1, .05),
-                                      n_max = 500,
-                                      c_max = 500))
+                                      n_total = 500,
+                                      cost_total = 500))
 
-  #if n_max is provided, can't also provide tau_h or c_NR_h
+  #if n_total is provided, can't also provide tau_h or c_NR_h
   expect_error(opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                       phibar_h = c(.2, .1, .05),
-                                      n_max = 500,
+                                      n_total = 500,
                                       tau_h = 1))
 
   expect_error(opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                       phibar_h = c(.2, .1, .05),
-                                      n_max = 500,
+                                      n_total = 500,
                                       c_NR_h = 1))
 
-  #if c_max is provided, need to provide tau_h and c_NR_h
+  #if cost_total is provided, need to provide tau_h and c_NR_h
   expect_error(opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                       phibar_h = c(.2, .1, .05),
-                                      c_max = 500,
+                                      cost_total = 500,
                                       tau_h = 1))
 
   expect_error(opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                       phibar_h = c(.2, .1, .05),
-                                      c_max = 500,
+                                      cost_total = 500,
                                       c_NR_h = 1))
 
 
@@ -91,14 +91,14 @@ test_that("opt_nh_nonresp_oneiter correctly validates arguments", {
 test_that("opt_nh_nonresp_oneiter test cases work", {
   alloc_nmax_500 <- opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                            phibar_h = c(.2, .1, .05),
-                                           n_max = 500)
+                                           n_total = 500)
 
-  #alloc of n=500 should be equivalent to scenario with c_NR=2 and c_max = 1000
+  #alloc of n=500 should be equivalent to scenario with c_NR=2 and cost_total = 1000
   #  and with with const S_h and zeta thrown in
   expect_equal(alloc_nmax_500,
                opt_nh_nonresp_oneiter(N_h = c(1e4, 2e4, 5e4),
                                       phibar_h = c(.2, .1, .05),
-                                      c_max = 1000,
+                                      cost_total = 1000,
                                       c_NR_h = 2,
                                       tau_h = 1,
                                       S_h = rep(2, 3),
@@ -117,7 +117,7 @@ test_that("opt_nh_nonresp_oneiter test cases work", {
                                       zeta_h = c(1.11, 1.05, 1.3),
                                       tau_h = c(1.5, 1.9, 3.1),
                                       c_NR_h = c(2.2, 2.1, 2),
-                                      c_max = 1000),
+                                      cost_total = 1000),
                c(19.1561051, 73.8871177, 354.9839879),
                tolerance = 1e-6)
 })
@@ -132,7 +132,7 @@ test_that("opt_nh_nonresp test case works", {
                  phibar_h = c(.2, .1, .05),
                  tau_h = c(1.5, 1.9, 3.1),
                  c_NR_h = c(2.2, 2.1, 2),
-                 c_max = 1000)
+                 cost_total = 1000)
 
   opt_nh1 <- do.call(opt_nh_nonresp_oneiter, myargs)
   zeta_h1 <- calc_zeta(n_h = opt_nh1, phibar_h = myargs$phibar_h)

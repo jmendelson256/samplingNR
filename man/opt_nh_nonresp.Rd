@@ -18,8 +18,8 @@ opt_nh_nonresp_oneiter(
   N_h,
   phibar_h,
   S_h = NULL,
-  n_max = NULL,
-  c_max = NULL,
+  n_total = NULL,
+  cost_total = NULL,
   zeta_h = NULL,
   c_NR_h = NULL,
   tau_h = NULL,
@@ -46,18 +46,18 @@ opt_nh_nonresp_oneiter(
 
 \item{S_h}{(vector) strata population standard deviations (\eqn{S_h}); constant, by default}
 
-\item{n_max}{(scalar) total sample to allocate}
+\item{n_total}{(scalar) total sample to allocate}
 
-\item{c_max}{(scalar) max expected costs to allocate}
+\item{cost_total}{(scalar) total expected costs to allocate}
 
 \item{zeta_h}{(vector; use with \code{opt_nh_nonresp_oneiter}, only;
 optional) adjustment factor to reflect inflation in variances
 from randomness in the number of respondents (default = 1)}
 
-\item{c_NR_h}{(vector; use with c_max) per-unit costs for nonrespondents in stratum h
+\item{c_NR_h}{(vector; use with cost_total) per-unit costs for nonrespondents in stratum h
 (\eqn{c_{NR_h}})}
 
-\item{tau_h}{(vector; use with c_max) ratio of costs for respondents to
+\item{tau_h}{(vector; use with cost_total) ratio of costs for respondents to
 costs for nonrespondents in stratum h (\eqn{\tau_h})}
 
 \item{strict_flag}{(boolean) whether to throw error (versus warning) if any
@@ -99,8 +99,8 @@ with a ratio of \eqn{\tau_h = c_{R_h}/c_{NR_h}}.
 \code{opt_nh_nonresp_oneiter()}, which conditions on some
 given \eqn{\zeta_h(.)}.
 
-Users must specify either the maximum total sample size (\code{n_max}) or the
-maximum total expected costs (\code{c_max}), but not both.
+Users must specify either the total sample size (\code{n_total}) or the
+total expected costs (\code{cost_total}), but not both.
 Under the cost specification, users must also specify the unit costs
 of nonrespondents (\code{c_NR_h}) and the ratio of unit costs
 for respondents to that of nonrespondents (\code{tau_h}).
@@ -145,7 +145,7 @@ proposed allocation for user-supplied \code{zeta_h}
 #Assumes tau = 1 by default
 pevs_optE_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
                                       phibar_h = pevs_adm_2016_rrs$rr_h,
-                                      n_max = 50000)
+                                      n_total = 50000)
 
 #Merge results into data frame
 (pevs_adm_alloc_50k_merged <- pevs_adm_2016_rrs \%>\%
@@ -157,7 +157,7 @@ pevs_optE_alloc_50k <- opt_nh_nonresp(N_h = pevs_adm_2016_rrs$Nhat_h,
 #For comparison purposes, compute approximate version of proposed allocation
 pevs_optA_alloc_50k <- opt_nh_nonresp_oneiter(N_h = pevs_adm_2016_rrs$Nhat_h,
                                               phibar_h = pevs_adm_2016_rrs$rr_h,
-                                              n_max = 50000)
+                                              n_total = 50000)
 
 #Merge results to previous tibble and reorder columns to be adjacent
 pevs_adm_alloc_50k_merged \%>\%

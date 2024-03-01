@@ -1,7 +1,11 @@
+# samplingNR 0.2.2.9000
+
+* In allocation functions, renamed arguments `n_max` and `c_max` to `n_total` and `cost_total`
+
 # samplingNR 0.2.2
 
 * Use cc0 licensing
-* In `opt_nh_nonresp`, moved ... to be before optional args
+* In `opt_nh_nonresp()`, moved ... to be before optional args
 * First intended public release
 
 # samplingNR 0.2.1
