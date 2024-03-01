@@ -14,10 +14,12 @@ provided in Mendelson & Elliott (in press).
 
 ## Installation
 
-You can install `samplingNR` by using a command such as:
+You can install the latest development version of `samplingNR` from
+[GitHub](https://github.com/) with:
 
 ``` r
-install.packages("samplingNR_0.2.2.tar.gz")
+# install.packages("devtools")
+devtools::install_github("jmendelson256/samplingNR")
 ```
 
 ## Vignette
