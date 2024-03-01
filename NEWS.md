@@ -1,6 +1,7 @@
 # samplingNR 0.2.2.9000
 
 * In allocation functions, renamed arguments `n_max` and `c_max` to `n_total` and `cost_total`
+* Added references to our underlying methods paper
 
 # samplingNR 0.2.2
 

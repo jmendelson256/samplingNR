@@ -6,7 +6,7 @@ Authors@R: person("Jonathan", "Mendelson", email = "jmendelson@gmail.com", role=
                   comment = c(ORCID = "0000-0001-5575-8773"))
 Author: Jonathan Mendelson [aut, cre] (<https://orcid.org/0000-0001-5575-8773>)
 Maintainer: Jonathan Mendelson <jmendelson@gmail.com>
-Description: Computes stratified sample allocations in a manner that accounts for anticipated nonresponse.
+Description: Computes stratified sample allocations in a manner that accounts for anticipated nonresponse. Theory is provided in Mendelson & Elliott, "Optimal allocation under anticipated nonresponse," in press at the Journal of Survey Statistics and Methodology.
 License: CC0
 Encoding: UTF-8
 LazyData: true

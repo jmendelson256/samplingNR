@@ -9,7 +9,8 @@
 <!-- badges: end -->
 
 `samplingNR` is an R package that allows for computing optimal
-allocations under anticipated nonresponse, as described in our paper.
+allocations under anticipated nonresponse. The underlying theory is
+provided in Mendelson & Elliott (in press).
 
 ## Installation
 
@@ -73,3 +74,8 @@ ratio of the unit costs per respondent to those of nonrespondents (by
 strata). The arguments `c_NR_h` and `tau_h` can be specified as vectors
 of dimension `H` if these quantities vary by strata; alternatively, if
 assumed constant across strata, they can be specified as scalars.
+
+# References
+
+Mendelson, J., & Elliott, M. R. (in press). Optimal allocation under
+anticipated nonresponse. *Journal of Survey Statistics and Methodology*.

@@ -19,7 +19,7 @@ knitr::opts_chunk$set(
   [![R-CMD-check](https://github.com/jmendelson256/samplingNR/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jmendelson256/samplingNR/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
   
-`samplingNR` is an R package that allows for computing optimal allocations under anticipated nonresponse, as described in our paper.
+`samplingNR` is an R package that allows for computing optimal allocations under anticipated nonresponse. The underlying theory is provided in Mendelson & Elliott (in press).
 
 ## Installation
 
@@ -70,3 +70,8 @@ opt_nh_nonresp(
 ```
 
 Here, `cost_total` denotes the total allowable costs, `c_NR_h` denotes the unit costs per nonrespondent (by strata), and `tau_h` denotes the ratio of the unit costs per respondent to those of nonrespondents (by strata). The arguments `c_NR_h` and `tau_h` can be specified as vectors of dimension `H` if these quantities vary by strata; alternatively, if assumed constant across strata, they can be specified as scalars.
+
+# References
+
+Mendelson, J., & Elliott, M. R. (in press). Optimal allocation under anticipated nonresponse. *Journal of Survey Statistics and Methodology*.
+

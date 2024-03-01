@@ -79,7 +79,7 @@ the user-supplied \code{zeta_h}.
 }
 \description{
 Computes the optimal stratified sampling
-allocation under anticipated nonresponse, as proposed in our paper,
+allocation under anticipated nonresponse, as proposed in Mendelson & Elliott (in press),
 which is
 \deqn{n_h \propto \frac{N_h S_h \sqrt{\zeta_h(n_h, \bar{\phi}_h)}}
      {\sqrt{\bar{\phi}_h c_h }},}
@@ -95,7 +95,7 @@ have per-unit costs of \eqn{c_{R_h}} and \eqn{c_{NR_h}}, respectively,
 with a ratio of \eqn{\tau_h = c_{R_h}/c_{NR_h}}.
 
 \code{opt_nh_nonresp()} computes the exact allocation in an iterative fashion
-(see Details section); individual iterations are computed using
+(see \emph{Details} section); individual iterations are computed using
 \code{opt_nh_nonresp_oneiter()}, which conditions on some
 given \eqn{\zeta_h(.)}.
 
@@ -164,5 +164,9 @@ pevs_adm_alloc_50k_merged \%>\%
   dplyr::mutate(n_h_optA = c(pevs_optA_alloc_50k)) \%>\%
   dplyr::relocate(zeta_h_optE, .after = "n_h_optA")
 
+}
+\references{
+Mendelson, J., & Elliott, M. R. (in press).
+\emph{Journal of Survey Statistics and Methodology}.
 }
 \keyword{allocation}
