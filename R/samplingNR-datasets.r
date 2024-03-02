@@ -7,7 +7,8 @@
 #' public use data.
 #'
 #'@details
-#'This table is from our paper's secondary analysis of survey data from
+#'This table is from our paper's
+#'secondary analysis of survey data (Mendelson & Elliott, in press) from
 #'FVAP's 2016 Post-Election Voting Survey of U.S. Active Duty Military
 #'(PEVS-ADM; FVAP, 2017a).
 #'The sampling frame reflects U.S. Active Duty Military, as of
@@ -51,14 +52,15 @@
 #'@references
 #'Federal Voting Assistance Program. (2017a). 2015-2016 Active Duty Military dataset.
 #'Federal Voting Assistance Program, U.S. Department of Defense.
-#'\url{https://www.fvap.gov/uploads/FVAP/Surveys/PEV51601_Pub.dta} [Accessed 17 January 2023].
 #'
 #'Federal Voting Assistance Program (2017b). Post-Election Voting Surveys:
 #'Active Duty Military: Technical report 2016.
 #'Technical report, Federal Voting Assistance Program,
 #'U.S. Department of Defense.
-#'\url{https://www.fvap.gov/uploads/FVAP/Reports/PEVS_ADM_TechReport_Final.pdf}
-#'[Accessed 17 January 2023].
+#'
+#'Mendelson, J., & Elliott, M. R. (in press).
+#  'Optimal allocation under anticipated nonresponse.
+#'  \emph{Journal of Survey Statistics and Methodology}.
 #'@noMd
 "pevs_adm_2016_rrs"
 

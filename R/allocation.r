@@ -6,8 +6,8 @@
 #'
 #'@description
 #'Computes the optimal stratified sampling
-#'allocation under anticipated nonresponse, as proposed in our paper,
-#'which is
+#'allocation under anticipated nonresponse, as proposed in
+#'Mendelson & Elliott (in press), which is
 #'\deqn{n_h \propto \frac{N_h S_h \sqrt{\zeta_h(n_h, \bar{\phi}_h)}}
 #'      {\sqrt{\bar{\phi}_h c_h }},}
 #'where \eqn{N_h} is the stratum \eqn{h} population size,
@@ -149,6 +149,10 @@
 #'   dplyr::mutate(n_h_optA = c(pevs_optA_alloc_50k)) %>%
 #'   dplyr::relocate(zeta_h_optE, .after = "n_h_optA")
 #'
+#'@references
+#'Mendelson, J., & Elliott, M. R. (in press).
+#  'Optimal allocation under anticipated nonresponse.
+#'  \emph{Journal of Survey Statistics and Methodology}.
 #'@describeIn opt_nh_nonresp computes the exact (i.e., iterative) version of the proposed allocation.
 #'@inheritDotParams opt_nh_nonresp_oneiter -zeta_h
 #'@keywords allocation
@@ -442,7 +446,7 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 #'@description
 #'Computes
 #'\eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
-#' as defined in the paper.
+#' as defined in our paper (Mendelson & Elliott, in press); see *Details* for a summary.
 #'If there are any strata where the allocation may lead to
 #' \eqn{\mathrm{E}(r_h) < r_h^{LB}} for user-specified \eqn{r_h^{LB}}
 #' (3.5 by default), then \eqn{\zeta_h(.)} is evaluated
@@ -455,7 +459,8 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 #' \eqn{\lfloor n_h \rfloor + 1}, as in the paper.
 #'
 #'@details
-#'In our paper, we assumed that the number of respondents in stratum \eqn{h}
+#'In Mendelson & Elliott (in press),
+#'we assumed that the number of respondents in stratum \eqn{h}
 #' can be modeled as standard binomial with support for zero removed
 #' (i.e., zero-truncated binomial; see [dtruncbinom()]),
 #' written as \eqn{r_h \sim TBinom(n_h, \bar{\phi}_h)}, where
@@ -506,6 +511,10 @@ opt_nh_nonresp_oneiter <- function(objective = c("min_var", "min_cost", "min_n")
 #'calc_zeta(n_h = c(100, 200, 300, 300),
 #'          phibar_h = c(.03, .02, .05, .005))
 #'@keywords distributions
+#'@references
+#'Mendelson, J., & Elliott, M. R. (in press).
+#  'Optimal allocation under anticipated nonresponse.
+#'  \emph{Journal of Survey Statistics and Methodology}.
 #'@export
 calc_zeta <- function(n_h,
                       phibar_h,
