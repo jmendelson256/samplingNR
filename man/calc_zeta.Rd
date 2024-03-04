@@ -24,7 +24,7 @@ where \eqn{n_h'} is the larger of \eqn{n_h} or \eqn{\frac{r_h^{LB}}{\bar{\phi}_h
 \description{
 Computes
 \eqn{\zeta_h(n_h, \bar{\phi}_h):=\mathrm{E}(r_h)\mathrm{E}\left(\frac{1}{r_h}\right)},
-as defined in our paper (Mendelson & Elliott, in press) see \emph{Details} for a summary.
+as defined in our paper (Mendelson & Elliott, in press); see \emph{Details} for a summary.
 If there are any strata where the allocation may lead to
 \eqn{\mathrm{E}(r_h) < r_h^{LB}} for user-specified \eqn{r_h^{LB}}
 (3.5 by default), then \eqn{\zeta_h(.)} is evaluated
