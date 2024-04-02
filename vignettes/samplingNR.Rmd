@@ -99,7 +99,6 @@ calculate_deff_w <- function (N_h, r_h) {
   stopifnot(length(N_h) == length(r_h))
   stopifnot(all(r_h >= 1))
   stopifnot(all(r_h <= N_h))
-  testthat::expect_equal(all(r_h <= N_h), TRUE)
 
   w_h <- N_h/r_h
 
